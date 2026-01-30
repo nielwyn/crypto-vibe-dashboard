@@ -4,6 +4,7 @@ AI-powered Chrome extension showing real-time crypto market sentiment for Herond
 
 ## Features
 
+### Core Features
 - 🎯 **Market Mood Indicator** - Real-time bullish/bearish/neutral gauge based on live crypto prices
 - 🤖 **AI Market Summary** - Google Gemini-powered market analysis with streaming text effect
 - 📊 **Live Coin Tracker** - Real-time prices from CoinGecko with auto-refresh every 30 seconds
@@ -12,6 +13,31 @@ AI-powered Chrome extension showing real-time crypto market sentiment for Herond
 - 📰 **News Feed** - Latest crypto headlines with sentiment analysis
 - ⚙️ **Coin Selector** - Customize up to 5 coins to track
 - 💾 **Offline Support** - Chrome Storage caching for offline fallback
+
+### 🎨 Creative Features (NEW!)
+- 🎭 **Dynamic Mascot Reactions** - Animated emoji character that reacts to market sentiment:
+  - 🤑 Extreme Bullish (>5%): Money eyes, bouncing animation
+  - 😎 Bullish (>2%): Cool vibes, pulsing
+  - 😐 Neutral (-2% to 2%): Chill state
+  - 😰 Bearish (<-2%): Nervous, shaking
+  - 😱 Extreme Bearish (<-5%): Panic mode, intense animation
+- 💬 **AI Degen Mode Toggle** - Switch between:
+  - 🤓 **Professional Mode**: Standard market analysis
+  - 🚀 **Degen Mode**: Crypto slang commentary with WAGMI, NGMI, diamond hands, paper hands, moon, lambo, and more!
+- 🎊 **Confetti Celebration** - Automatic confetti when ALL coins are green! Golden confetti when all coins are >10%
+  - Demo trigger: Press `Ctrl+C` to test
+  - Only triggers once per session
+- 🔥 **Daily Streak Counter** - Track consecutive days opening the extension
+  - Fire emoji intensity grows with your streak
+  - Resets if you miss 24 hours
+- 🌈 **Mood-Based Theme Colors** - Subtle background glow that changes with market sentiment:
+  - Green glow for bullish markets
+  - Red glow for bearish markets
+  - Neutral dark theme for sideways action
+- 🎰 **Prediction Mini-Game** - Test your market intuition!
+  - Predict BTC's next hour trend (Up/Down/Sideways)
+  - Track your accuracy percentage
+  - See if you're a crypto oracle or need more practice!
 
 ## Tech Stack
 
@@ -106,14 +132,26 @@ Then load the extension from the `dist/` folder as described above. The extensio
 
 1. Click the extension icon in your browser toolbar
 2. The popup displays:
+   - **Animated Mascot** (top-right) reacting to market mood
    - Market mood gauge (bullish/bearish/neutral)
-   - AI-generated market analysis (click "Refresh" to generate)
+   - AI-generated market analysis with Pro/Degen mode toggle
    - Live prices for your selected coins
    - 7-day price trend sparklines
    - Latest crypto news headlines
+   - **Daily Streak Counter** (bottom) showing consecutive days
+   - **Prediction Game** button to test your market intuition
 3. Click the gear icon to customize which coins to track (max 5)
-4. Prices auto-refresh every 30 seconds
-5. News updates every 5 minutes
+4. Toggle between **Professional** and **Degen** mode for AI analysis
+5. Watch for **Confetti** when all your coins are green! 🎊
+6. Prices auto-refresh every 30 seconds
+7. News updates every 5 minutes
+
+### Easter Eggs & Tips
+- Press `Ctrl+C` to trigger confetti manually (great for demos!)
+- Your daily streak resets if you miss 24 hours - keep coming back!
+- Try Degen mode for entertaining crypto slang analysis
+- The mascot gets more dramatic as market sentiment intensifies
+- Background subtly glows green (bullish) or red (bearish)
 
 ## Project Structure
 
@@ -126,20 +164,35 @@ crypto-vibe-dashboard/
 ├── src/
 │   ├── popup/                # Popup UI
 │   │   ├── index.html       # HTML entry point
+│   │   ├── index.css        # Global styles with custom animations
 │   │   ├── index.tsx        # React entry point
 │   │   ├── App.tsx          # Main app component
 │   │   └── components/      # React components
+│   │       ├── AISummary.tsx          # AI analysis with mode toggle
+│   │       ├── CoinCard.tsx           # Individual coin display
+│   │       ├── CoinSelector.tsx       # Coin selection UI
+│   │       ├── MoodGauge.tsx          # Market sentiment indicator
+│   │       ├── NewsTicker.tsx         # News carousel
+│   │       ├── RefreshIndicator.tsx   # Last update timestamp
+│   │       ├── Sparkline.tsx          # Mini price chart
+│   │       ├── Mascot.tsx             # 🎭 Animated mascot (NEW)
+│   │       ├── ModeToggle.tsx         # 💬 Pro/Degen toggle (NEW)
+│   │       ├── Confetti.tsx           # 🎊 Celebration animation (NEW)
+│   │       ├── StreakCounter.tsx      # 🔥 Daily streak tracker (NEW)
+│   │       └── PredictionGame.tsx     # 🎰 Prediction mini-game (NEW)
 │   ├── services/            # API services
 │   │   ├── coingecko.ts    # CoinGecko API integration
-│   │   ├── gemini.ts       # Google Gemini AI integration
+│   │   ├── gemini.ts       # Google Gemini AI integration (with degen mode)
 │   │   ├── firecrawl.ts    # Firecrawl news scraping
-│   │   └── storage.ts      # Chrome Storage wrapper
+│   │   └── storage.ts      # Chrome Storage wrapper (with streak & predictions)
 │   ├── hooks/               # Custom React hooks
 │   │   ├── useCoins.ts     # Coin data management
-│   │   ├── useAI.ts        # AI analysis management
+│   │   ├── useAI.ts        # AI analysis management (mode support)
 │   │   └── useNews.ts      # News data management
 │   ├── types/               # TypeScript type definitions
+│   │   └── index.ts        # UserStats, Prediction, extended types
 │   └── utils/               # Utility functions
+│       └── sentiment.ts    # Market sentiment calculation
 └── README.md
 ```
 

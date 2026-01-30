@@ -1,22 +1,31 @@
-import { UserPreferences, CoinData, AIAnalysis, NewsItem } from '../types';
+import { UserPreferences, CoinData, AIAnalysis, NewsItem, UserStats } from '../types';
 
 const STORAGE_KEYS = {
   PREFERENCES: 'userPreferences',
   COIN_CACHE: 'coinCache',
   AI_CACHE: 'aiCache',
   NEWS_CACHE: 'newsCache',
+  USER_STATS: 'userStats',
+  CONFETTI_TRIGGERED: 'confettiTriggered',
 };
 
 export const storage = {
   async getPreferences(): Promise<UserPreferences> {
     const result = await chrome.storage.local.get(STORAGE_KEYS.PREFERENCES);
-    const prefs = result[STORAGE_KEYS.PREFERENCES];
+    const prefs = result[STORAGE_KEYS.PREFERENCES] as any;
     if (prefs && typeof prefs === 'object' && 'selectedCoins' in prefs) {
-      return prefs as UserPreferences;
+      return {
+        selectedCoins: Array.isArray(prefs.selectedCoins) ? prefs.selectedCoins : ['bitcoin', 'ethereum', 'solana'],
+        refreshInterval: prefs.refreshInterval || 30,
+        aiMode: prefs.aiMode || 'professional',
+        soundEnabled: prefs.soundEnabled !== undefined ? prefs.soundEnabled : true,
+      };
     }
     return {
       selectedCoins: ['bitcoin', 'ethereum', 'solana'],
       refreshInterval: 30,
+      aiMode: 'professional',
+      soundEnabled: true,
     };
   },
 
@@ -55,5 +64,60 @@ export const storage = {
 
   async setNewsCache(news: NewsItem[]): Promise<void> {
     await chrome.storage.local.set({ [STORAGE_KEYS.NEWS_CACHE]: news });
+  },
+
+  async getUserStats(): Promise<UserStats> {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.USER_STATS);
+    const stats = result[STORAGE_KEYS.USER_STATS];
+    if (stats && typeof stats === 'object') {
+      return stats as UserStats;
+    }
+    return {
+      streak: 0,
+      lastVisit: 0,
+      totalChecks: 0,
+      predictions: [],
+      badges: [],
+    };
+  },
+
+  async setUserStats(stats: UserStats): Promise<void> {
+    await chrome.storage.local.set({ [STORAGE_KEYS.USER_STATS]: stats });
+  },
+
+  async updateStreak(): Promise<UserStats> {
+    const stats = await this.getUserStats();
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    
+    if (stats.lastVisit === 0) {
+      // First visit
+      stats.streak = 1;
+    } else {
+      const timeSinceLastVisit = now - stats.lastVisit;
+      if (timeSinceLastVisit < oneDayMs) {
+        // Same day, don't increment
+      } else if (timeSinceLastVisit < 2 * oneDayMs) {
+        // Next day, increment streak
+        stats.streak += 1;
+      } else {
+        // Missed a day, reset streak
+        stats.streak = 1;
+      }
+    }
+    
+    stats.lastVisit = now;
+    stats.totalChecks += 1;
+    await this.setUserStats(stats);
+    return stats;
+  },
+
+  async getConfettiTriggered(): Promise<boolean> {
+    const result = await chrome.storage.session.get(STORAGE_KEYS.CONFETTI_TRIGGERED);
+    return !!result[STORAGE_KEYS.CONFETTI_TRIGGERED];
+  },
+
+  async setConfettiTriggered(triggered: boolean): Promise<void> {
+    await chrome.storage.session.set({ [STORAGE_KEYS.CONFETTI_TRIGGERED]: triggered });
   },
 };

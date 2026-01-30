@@ -31,4 +31,22 @@ export interface NewsItem {
 export interface UserPreferences {
   selectedCoins: string[];
   refreshInterval: number;
+  aiMode: 'professional' | 'degen';
+  soundEnabled: boolean;
+}
+
+export interface UserStats {
+  streak: number;
+  lastVisit: number;
+  totalChecks: number;
+  predictions: Prediction[];
+  badges: string[];
+}
+
+export interface Prediction {
+  coin: string;
+  direction: 'up' | 'down' | 'sideways';
+  priceAtPrediction: number;
+  timestamp: number;
+  result: 'correct' | 'wrong' | 'pending';
 }

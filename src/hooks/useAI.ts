@@ -8,12 +8,12 @@ export function useAI() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateAnalysis = useCallback(async (coins: CoinData[]) => {
+  const generateAnalysis = useCallback(async (coins: CoinData[], mode: 'professional' | 'degen' = 'professional') => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await gemini.generateAnalysis(coins);
+      const result = await gemini.generateAnalysis(coins, mode);
       setAnalysis(result);
       
       await storage.setAICache(result);
