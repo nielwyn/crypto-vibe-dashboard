@@ -5,11 +5,16 @@ import { CoinCard } from './components/CoinCard';
 import { CoinSelector } from './components/CoinSelector';
 import { NewsTicker } from './components/NewsTicker';
 import { RefreshIndicator } from './components/RefreshIndicator';
+import { Mascot } from './components/Mascot';
+import { Confetti } from './components/Confetti';
+import { StreakCounter } from './components/StreakCounter';
+import { PredictionGame } from './components/PredictionGame';
 import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
 import { calculateMarketSentiment } from '../utils/sentiment';
-import { CoinData } from '../types';
+import { CoinData, UserStats } from '../types';
+import { storage } from '../services/storage';
 
 function App() {
   const { coins, loading: coinsLoading, selectedCoins, lastUpdated, updateSelectedCoins } = useCoins();
@@ -17,8 +22,36 @@ function App() {
   const { news } = useNews();
   
   const [previousPrices, setPreviousPrices] = useState<Record<string, number>>({});
+  const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
+  const [userStats, setUserStats] = useState<UserStats>({
+    streak: 0,
+    lastVisit: 0,
+    totalChecks: 0,
+    predictions: [],
+    badges: [],
+  });
+  const [confettiTrigger, setConfettiTrigger] = useState(false);
+  const [isGoldenDay, setIsGoldenDay] = useState(false);
   
   const sentiment = calculateMarketSentiment(coins);
+
+  // Load AI mode preference
+  useEffect(() => {
+    const loadPreferences = async () => {
+      const prefs = await storage.getPreferences();
+      setAiMode(prefs.aiMode);
+    };
+    loadPreferences();
+  }, []);
+
+  // Update streak on mount
+  useEffect(() => {
+    const updateStreak = async () => {
+      const stats = await storage.updateStreak();
+      setUserStats(stats);
+    };
+    updateStreak();
+  }, []);
 
   useEffect(() => {
     loadCachedAnalysis();
@@ -33,15 +66,106 @@ function App() {
     setPreviousPrices(newPrices);
   }, [coins]);
 
+  // Check for all-green confetti trigger
+  useEffect(() => {
+    const checkConfetti = async () => {
+      if (coins.length > 0) {
+        const allGreen = coins.every(coin => coin.price_change_percentage_24h > 0);
+        const allGolden = coins.every(coin => coin.price_change_percentage_24h > 10);
+        
+        if (allGreen) {
+          const hasTriggered = await storage.getConfettiTriggered();
+          if (!hasTriggered) {
+            setIsGoldenDay(allGolden);
+            setConfettiTrigger(true);
+            await storage.setConfettiTriggered(true);
+            // Reset trigger after animation
+            setTimeout(() => setConfettiTrigger(false), 4000);
+          }
+        }
+      }
+    };
+    checkConfetti();
+  }, [coins]);
+
+  // Demo confetti trigger (Ctrl+C)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'c') {
+        setIsGoldenDay(true);
+        setConfettiTrigger(true);
+        setTimeout(() => setConfettiTrigger(false), 4000);
+      }
+    };
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, []);
+
   const handleRefreshAI = () => {
     if (coins.length > 0) {
-      generateAnalysis(coins);
+      generateAnalysis(coins, aiMode);
     }
   };
 
+  const handleModeChange = async (mode: 'professional' | 'degen') => {
+    setAiMode(mode);
+    const prefs = await storage.getPreferences();
+    prefs.aiMode = mode;
+    await storage.setPreferences(prefs);
+    
+    // Regenerate analysis with new mode
+    if (coins.length > 0) {
+      generateAnalysis(coins, mode);
+    }
+  };
+
+  const handlePredict = async (direction: 'up' | 'down' | 'sideways') => {
+    const btcCoin = coins.find(c => c.id === 'bitcoin');
+    if (!btcCoin) return;
+
+    const newPrediction = {
+      coin: 'bitcoin',
+      direction,
+      priceAtPrediction: btcCoin.current_price,
+      timestamp: Date.now(),
+      result: 'pending' as const,
+    };
+
+    const stats = await storage.getUserStats();
+    stats.predictions.push(newPrediction);
+    await storage.setUserStats(stats);
+    setUserStats(stats);
+  };
+
+  const calculateAccuracy = () => {
+    if (userStats.predictions.length === 0) return undefined;
+    const completed = userStats.predictions.filter(p => p.result !== 'pending');
+    if (completed.length === 0) return 0;
+    const correct = completed.filter(p => p.result === 'correct').length;
+    return Math.round((correct / completed.length) * 100);
+  };
+
+  // Get mood-based background classes
+  const getMoodBackground = () => {
+    if (sentiment.score > 2) {
+      return 'bg-gradient-to-b from-crypto-dark via-crypto-dark to-crypto-dark/95 [box-shadow:inset_0_0_80px_rgba(0,255,136,0.1)]';
+    } else if (sentiment.score < -2) {
+      return 'bg-gradient-to-b from-crypto-dark via-crypto-dark to-crypto-dark/95 [box-shadow:inset_0_0_80px_rgba(255,51,102,0.1)]';
+    }
+    return 'bg-crypto-dark';
+  };
+
   return (
-    <div className="w-[400px] h-[600px] bg-crypto-dark text-white overflow-y-auto">
-      <div className="p-4">
+    <div className={`w-[400px] h-[600px] text-white overflow-y-auto transition-all duration-1000 ${getMoodBackground()}`}>
+      {/* Confetti overlay */}
+      <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
+      
+      <div className="p-4 relative">
+        {/* Mascot */}
+        {!coinsLoading && coins.length > 0 && (
+          <Mascot sentiment={sentiment} />
+        )}
+        
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
@@ -60,6 +184,8 @@ function App() {
           analysis={analysis}
           loading={aiLoading}
           onRefresh={handleRefreshAI}
+          mode={aiMode}
+          onModeChange={handleModeChange}
         />
 
         {/* Coin Selector */}
@@ -95,6 +221,19 @@ function App() {
 
         {/* News Ticker */}
         {news.length > 0 && <NewsTicker news={news} />}
+
+        {/* Bottom Stats Bar */}
+        {!coinsLoading && coins.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-800">
+            <div className="flex items-center justify-between mb-3">
+              <StreakCounter streak={userStats.streak} />
+            </div>
+            <PredictionGame
+              onPredict={handlePredict}
+              accuracy={calculateAccuracy()}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { AIAnalysis } from '../../types';
+import { ModeToggle } from './ModeToggle';
 
 interface AISummaryProps {
   analysis: AIAnalysis | null;
   loading: boolean;
   onRefresh: () => void;
+  mode: 'professional' | 'degen';
+  onModeChange: (mode: 'professional' | 'degen') => void;
 }
 
 export const AISummary: React.FC<AISummaryProps> = ({
   analysis,
   loading,
   onRefresh,
+  mode,
+  onModeChange,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -43,13 +48,16 @@ export const AISummary: React.FC<AISummaryProps> = ({
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
           🤖 AI Market Analysis
         </h2>
-        <button
-          onClick={onRefresh}
-          disabled={loading || isTyping}
-          className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded transition-colors"
-        >
-          {loading ? '⏳ Analyzing...' : '🔄 Refresh'}
-        </button>
+        <div className="flex items-center gap-2">
+          <ModeToggle mode={mode} onToggle={onModeChange} />
+          <button
+            onClick={onRefresh}
+            disabled={loading || isTyping}
+            className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded transition-colors"
+          >
+            {loading ? '⏳ Analyzing...' : '🔄 Refresh'}
+          </button>
+        </div>
       </div>
 
       {loading ? (
