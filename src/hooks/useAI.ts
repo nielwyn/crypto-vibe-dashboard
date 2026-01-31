@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { AIAnalysis, CoinData } from '../types';
+import { AIAnalysis, CoinData, YieldPool } from '../types';
 import { gemini } from '../services/gemini';
 import { storage } from '../services/storage';
 
@@ -8,12 +8,12 @@ export function useAI() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateAnalysis = useCallback(async (coins: CoinData[], mode: 'professional' | 'degen' = 'professional') => {
+  const generateAnalysis = useCallback(async (coins: CoinData[], mode: 'professional' | 'degen' = 'professional', yields: YieldPool[] = []) => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await gemini.generateAnalysis(coins, mode);
+      const result = await gemini.generateAnalysis(coins, mode, yields);
       setAnalysis(result);
       
       await storage.setAICache(result);
