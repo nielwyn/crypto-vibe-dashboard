@@ -18,8 +18,9 @@ export function useYields() {
       
       await storage.setYieldsCache(yieldData);
     } catch (err) {
-      setError('Failed to fetch yields data');
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Failed to fetch yields data: ${errorMessage}`);
+      console.error('Yields fetch error:', err);
       
       // Try to load from cache
       const cached = await storage.getYieldsCache();

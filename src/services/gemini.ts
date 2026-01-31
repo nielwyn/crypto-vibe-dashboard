@@ -113,15 +113,14 @@ function getMockAnalysis(coins: CoinData[], mode: 'professional' | 'degen' = 'pr
     };
   }
   
-  let summary = `The crypto market is showing ${sentiment} sentiment with an average 24-hour change of ${avgChange.toFixed(2)}%. Bitcoin continues to lead the market, while Ethereum shows ${ethChange > 0 ? 'positive' : 'negative'} momentum.
+  // Professional mode summary
+  const yieldInfo = topYield 
+    ? ` For yield opportunities, ${topYield.project} on ${topYield.chain} is offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} with a TVL of $${(topYield.tvlUsd / 1_000_000).toFixed(0)}M, presenting a solid risk-adjusted return.`
+    : '';
 
-Altcoins like Solana are demonstrating ${solChange > 0 ? 'strength' : 'weakness'}, reflecting broader market dynamics.`;
+  const summary = `The crypto market is showing ${sentiment} sentiment with an average 24-hour change of ${avgChange.toFixed(2)}%. Bitcoin continues to lead the market, while Ethereum shows ${ethChange > 0 ? 'positive' : 'negative'} momentum.
 
-  if (topYield) {
-    summary += ` For yield opportunities, ${topYield.project} on ${topYield.chain} is offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} with a TVL of $${(topYield.tvlUsd / 1_000_000).toFixed(0)}M, presenting a solid risk-adjusted return.`;
-  }
-
-  summary += ` Traders should monitor key support and resistance levels as volatility remains elevated.
+Altcoins like Solana are demonstrating ${solChange > 0 ? 'strength' : 'weakness'}, reflecting broader market dynamics.${yieldInfo} Traders should monitor key support and resistance levels as volatility remains elevated.
 
 Looking ahead, market participants are focusing on macro factors and technical indicators. The current price action suggests ${sentiment === 'bullish' ? 'continued upside potential' : sentiment === 'bearish' ? 'consolidation or correction' : 'sideways movement'} in the near term.`;
 

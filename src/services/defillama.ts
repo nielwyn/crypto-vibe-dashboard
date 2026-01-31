@@ -8,6 +8,12 @@ export const defillama = {
       const response = await fetch(YIELDS_API);
       const data = await response.json();
       
+      // Validate response structure
+      if (!data || !Array.isArray(data.data)) {
+        console.error('DefiLlama API returned unexpected format');
+        return [];
+      }
+      
       // Filter and sort for best yields
       return data.data
         .filter((pool: YieldPool) => 
@@ -27,6 +33,12 @@ export const defillama = {
     try {
       const response = await fetch(YIELDS_API);
       const data = await response.json();
+      
+      // Validate response structure
+      if (!data || !Array.isArray(data.data)) {
+        console.error('DefiLlama API returned unexpected format');
+        return [];
+      }
       
       return data.data
         .filter((pool: YieldPool) => 
