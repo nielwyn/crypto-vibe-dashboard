@@ -1,4 +1,4 @@
-import { UserPreferences, CoinData, AIAnalysis, NewsItem, UserStats } from '../types';
+import { UserPreferences, CoinData, AIAnalysis, NewsItem, UserStats, YieldPool } from '../types';
 
 const STORAGE_KEYS = {
   PREFERENCES: 'userPreferences',
@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   NEWS_CACHE: 'newsCache',
   USER_STATS: 'userStats',
   CONFETTI_TRIGGERED: 'confettiTriggered',
+  YIELDS_CACHE: 'yieldsCache',
 };
 
 export const storage = {
@@ -119,5 +120,15 @@ export const storage = {
 
   async setConfettiTriggered(triggered: boolean): Promise<void> {
     await chrome.storage.session.set({ [STORAGE_KEYS.CONFETTI_TRIGGERED]: triggered });
+  },
+
+  async getYieldsCache(): Promise<YieldPool[] | null> {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.YIELDS_CACHE);
+    const cache = result[STORAGE_KEYS.YIELDS_CACHE];
+    return Array.isArray(cache) ? cache : null;
+  },
+
+  async setYieldsCache(yields: YieldPool[]): Promise<void> {
+    await chrome.storage.local.set({ [STORAGE_KEYS.YIELDS_CACHE]: yields });
   },
 };

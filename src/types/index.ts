@@ -50,3 +50,22 @@ export interface Prediction {
   timestamp: number;
   result: 'correct' | 'wrong' | 'pending';
 }
+
+export interface YieldPool {
+  pool: string;
+  chain: string;
+  project: string;
+  symbol: string;
+  tvlUsd: number;
+  apy: number;
+  apyBase: number;
+  apyReward: number | null;
+  stablecoin: boolean;
+  rewardTokens?: string[];
+}
+
+export interface YieldsData {
+  pools: YieldPool[];
+  lastUpdated: number;
+  topYield: YieldPool | null;
+}

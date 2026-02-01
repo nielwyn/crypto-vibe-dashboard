@@ -9,9 +9,11 @@ import { Mascot } from './components/Mascot';
 import { Confetti } from './components/Confetti';
 import { StreakCounter } from './components/StreakCounter';
 import { PredictionGame } from './components/PredictionGame';
+import { YieldsSection } from './components/YieldsSection';
 import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
+import { useYields } from '../hooks/useYields';
 import { calculateMarketSentiment } from '../utils/sentiment';
 import { CoinData, UserStats } from '../types';
 import { storage } from '../services/storage';
@@ -20,6 +22,7 @@ function App() {
   const { coins, loading: coinsLoading, selectedCoins, lastUpdated, updateSelectedCoins } = useCoins();
   const { analysis, loading: aiLoading, generateAnalysis, loadCachedAnalysis } = useAI();
   const { news } = useNews();
+  const { yields, loading: yieldsLoading } = useYields();
   
   const [previousPrices, setPreviousPrices] = useState<Record<string, number>>({});
   const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
@@ -103,7 +106,7 @@ function App() {
 
   const handleRefreshAI = () => {
     if (coins.length > 0) {
-      generateAnalysis(coins, aiMode);
+      generateAnalysis(coins, aiMode, yields);
     }
   };
 
@@ -115,7 +118,7 @@ function App() {
     
     // Regenerate analysis with new mode
     if (coins.length > 0) {
-      generateAnalysis(coins, mode);
+      generateAnalysis(coins, mode, yields);
     }
   };
 
@@ -218,6 +221,9 @@ function App() {
             ))
           )}
         </div>
+
+        {/* Yields Section */}
+        <YieldsSection yields={yields} loading={yieldsLoading} />
 
         {/* News Ticker */}
         {news.length > 0 && <NewsTicker news={news} />}
