@@ -1,6 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-crypto-dark: #0f0f0f;
+  --color-crypto-accent-green: #00ff88;
+  --color-crypto-accent-red: #ff3366;
+}
 
 body {
   margin: 0;

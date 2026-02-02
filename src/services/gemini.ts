@@ -1,26 +1,27 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { AIAnalysis, CoinData, YieldPool } from '../types';
 
 export const gemini = {
   async generateAnalysis(coins: CoinData[], mode: 'professional' | 'degen' = 'professional', yields: YieldPool[] = []): Promise<AIAnalysis> {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    
+
     if (!apiKey) {
       console.warn('Gemini API key not found, using mock data');
       return getMockAnalysis(coins, mode, yields);
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const genAI = new GoogleGenAI({ apiKey });
 
-      const prompt = mode === 'degen' 
+      const prompt = mode === 'degen'
         ? getDegenPrompt(coins, yields)
         : getProfessionalPrompt(coins, yields);
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+      const text = response.text ?? '';
 
       return {
         summary: text,
@@ -84,37 +85,37 @@ Include:
 function getMockAnalysis(coins: CoinData[], mode: 'professional' | 'degen' = 'professional', yields: YieldPool[] = []): AIAnalysis {
   const avgChange = coins.reduce((sum, c) => sum + c.price_change_percentage_24h, 0) / coins.length;
   const sentiment = avgChange > 2 ? 'bullish' : avgChange < -2 ? 'bearish' : 'neutral';
-  
+
   const ethCoin = coins.find(c => c.id === 'ethereum');
   const ethChange = ethCoin ? ethCoin.price_change_percentage_24h : 0;
-  
+
   const solCoin = coins.find(c => c.id === 'solana');
   const solChange = solCoin ? solCoin.price_change_percentage_24h : 0;
-  
+
   const topYield = yields.length > 0 ? yields[0] : null;
-  
+
   if (mode === 'degen') {
     let summary = avgChange > 5
       ? `🚀🚀🚀 WAGMI frens! Market is absolutely bullish af with ${avgChange.toFixed(2)}% avg gains! 🤑💎🙌\n\nBTC leading the charge to the moon, ETH showing ${ethChange > 0 ? 'diamond hands energy' : 'some paper hands vibes'}, and SOL ${solChange > 5 ? 'going parabolic! Wen lambo?' : 'doing its thing'}. This is not financial advice but... ape in? 🦍\n\n`
       : avgChange < -5
-      ? `😱 Market getting REKT harder than a degen's portfolio after 100x leverage! 📉 Down ${Math.abs(avgChange).toFixed(2)}% - paper hands are panicking!\n\nBTC looking shaky, ETH ${ethChange < -5 ? 'absolutely dumping' : 'holding on barely'}, SOL ${solChange < -5 ? 'in full panic mode' : 'trying to survive'}. This is the part where diamond hands are forged, fren. 💎\n\n`
-      : `📊 Market doing that classic sideways crab action with ${avgChange.toFixed(2)}% change. Neither moon nor rekt - we're just vibing! 🦀\n\nBTC consolidating, ETH ${ethChange > 0 ? 'slightly green' : 'slightly red'}, SOL ${solChange > 0 ? 'pumping a bit' : 'dumping a bit'}. Perfect time to DCA and stack sats, ser! 📈\n\n`;
-    
+        ? `😱 Market getting REKT harder than a degen's portfolio after 100x leverage! 📉 Down ${Math.abs(avgChange).toFixed(2)}% - paper hands are panicking!\n\nBTC looking shaky, ETH ${ethChange < -5 ? 'absolutely dumping' : 'holding on barely'}, SOL ${solChange < -5 ? 'in full panic mode' : 'trying to survive'}. This is the part where diamond hands are forged, fren. 💎\n\n`
+        : `📊 Market doing that classic sideways crab action with ${avgChange.toFixed(2)}% change. Neither moon nor rekt - we're just vibing! 🦀\n\nBTC consolidating, ETH ${ethChange > 0 ? 'slightly green' : 'slightly red'}, SOL ${solChange > 0 ? 'pumping a bit' : 'dumping a bit'}. Perfect time to DCA and stack sats, ser! 📈\n\n`;
+
     if (topYield) {
       summary += `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! `;
     }
-    
+
     summary += `WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`;
-    
+
     return {
       summary,
       generatedAt: Date.now(),
       basedOn: coins,
     };
   }
-  
+
   // Professional mode summary
-  const yieldInfo = topYield 
+  const yieldInfo = topYield
     ? ` For yield opportunities, ${topYield.project} on ${topYield.chain} is offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} with a TVL of $${(topYield.tvlUsd / 1_000_000).toFixed(0)}M, presenting a solid risk-adjusted return.`
     : '';
 
