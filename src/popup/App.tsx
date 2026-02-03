@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDragScroll } from '../hooks/useDragScroll';
 import { FearGreedGauge } from './components/FearGreedGauge';
 import { AISummary } from './components/AISummary';
 import { CoinCard } from './components/CoinCard';
@@ -36,6 +37,7 @@ function App() {
   });
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [isGoldenDay, setIsGoldenDay] = useState(false);
+  const coinScrollRef = useDragScroll<HTMLDivElement>();
 
   // Load AI mode preference
   useEffect(() => {
@@ -154,17 +156,13 @@ function App() {
       <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
       
       {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 h-12 bg-[#0f0f0f] border-b border-gray-800 z-50 px-4 flex items-center justify-between">
-        {!coinsLoading && coins.length > 0 && (
-          <Mascot fearGreed={fearGreed} />
-        )}
+      <header className="fixed top-0 left-0 right-0 h-12 bg-[#0f0f0f] border-b border-gray-800 z-50 px-4 flex items-center justify-center">
         <h1 className="text-lg font-bold text-white">CRYPTO VIBE</h1>
-        <button 
-          className="text-gray-400 hover:text-white transition-colors"
-          title="Settings (Coming Soon)"
-        >
-          ⚙️
-        </button>
+        {!coinsLoading && coins.length > 0 && (
+          <div className="absolute left-4">
+            <Mascot fearGreed={fearGreed} />
+          </div>
+        )}
       </header>
 
       {/* Scrollable Content Area */}
@@ -196,15 +194,15 @@ function App() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-white">📊 Live Prices</span>
+              <TimeframeSelector 
+                selected={chartTimeframe} 
+                onChange={setChartTimeframe} 
+              />
               {isUpdating && (
                 <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Updating..." />
               )}
             </div>
             <div className="flex items-center gap-2">
-              <TimeframeSelector 
-                selected={chartTimeframe} 
-                onChange={setChartTimeframe} 
-              />
               {lastUpdated && <RefreshIndicator lastUpdated={lastUpdated} />}
               <CoinSelector
                 selectedCoins={selectedCoins}
@@ -213,8 +211,8 @@ function App() {
             </div>
           </div>
           
-          {/* Horizontal scroll container */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          {/* Horizontal scroll container with drag-to-scroll */}
+          <div ref={coinScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
             {coinsLoading && coins.length === 0 ? (
               <>
                 {[1, 2, 3].map((i) => (

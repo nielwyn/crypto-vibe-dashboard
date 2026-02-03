@@ -64,16 +64,25 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
     setSelectedCategory('All');
   }, [selectedCoins]);
 
-  // Filter coins based on search and category
+  // Filter coins based on search and category, with selected coins at top
   const filteredCoins = useMemo(() => {
-    return AVAILABLE_COINS.filter(coin => {
+    const filtered = AVAILABLE_COINS.filter(coin => {
       const matchesSearch = 
         coin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         coin.symbol.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || coin.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+    
+    // Sort: selected coins first, then alphabetically by symbol
+    return filtered.sort((a, b) => {
+      const aSelected = pendingSelection.includes(a.id);
+      const bSelected = pendingSelection.includes(b.id);
+      if (aSelected && !bSelected) return -1;
+      if (!aSelected && bSelected) return 1;
+      return a.symbol.localeCompare(b.symbol);
+    });
+  }, [searchQuery, selectedCategory, pendingSelection]);
 
   const toggleCoin = useCallback((coinId: string) => {
     setPendingSelection(prev => {
@@ -106,6 +115,22 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
     return !pendingSelection.every(id => selectedCoins.includes(id));
   }, [pendingSelection, selectedCoins]);
 
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+
+  const handleSelectCategory = useCallback((cat: string) => {
+    setSelectedCategory(cat);
+    setShowCategoryFilter(false);
+  }, []);
+
+  // Count coins per category
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: AVAILABLE_COINS.length };
+    AVAILABLE_COINS.forEach(coin => {
+      counts[coin.category] = (counts[coin.category] || 0) + 1;
+    });
+    return counts;
+  }, []);
+
   return (
     <div className="relative">
       <button
@@ -119,18 +144,18 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-[60] bg-black/50"
+            className="fixed inset-0 z-[60] bg-black/80"
             onClick={handleCancel}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-[350px] max-h-[500px] bg-[#1a1a1a] border border-gray-700 rounded-xl shadow-xl overflow-hidden">
+          <div className="fixed inset-0 z-[60] bg-[#1a1a1a] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
               <h3 className="text-white font-medium">Select Tokens</h3>
-              <button onClick={handleCancel} className="text-gray-400 hover:text-white">✕</button>
+              <button onClick={handleCancel} className="text-gray-400 hover:text-white text-xl">✕</button>
             </div>
             
             {/* Search */}
-            <div className="p-3 border-b border-gray-800">
+            <div className="p-3 border-b border-gray-800 flex-shrink-0">
               <input
                 type="text"
                 placeholder="Search tokens..."
@@ -141,32 +166,62 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
               />
             </div>
 
-            {/* Category tabs */}
-            <div className="px-3 py-2 border-b border-gray-800 overflow-x-auto scrollbar-hide">
-              <div className="flex gap-1">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-2 py-1 text-xs rounded whitespace-nowrap transition-colors ${
-                      selectedCategory === cat
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+            {/* Category Filter - Collapsible */}
+            <div className="border-b border-gray-800 flex-shrink-0">
+              {/* Toggle Button */}
+              <button
+                onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+                className="w-full px-4 py-3 flex items-center justify-between text-sm hover:bg-gray-800/30 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400">Filter:</span>
+                  <span className="text-white font-medium">{selectedCategory}</span>
+                  {selectedCategory !== 'All' && (
+                    <span className="text-xs text-gray-500">({categoryCounts[selectedCategory] || 0})</span>
+                  )}
+                </div>
+                <svg 
+                  className={`w-4 h-4 text-gray-400 transition-transform ${showCategoryFilter ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {/* Category Options */}
+              {showCategoryFilter && (
+                <div className="bg-[#141414] border-t border-gray-800">
+                  <div className="grid grid-cols-2 gap-1 p-2">
+                    {CATEGORIES.map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => handleSelectCategory(cat)}
+                        className={`px-3 py-2.5 text-sm rounded-lg text-left transition-colors flex items-center justify-between ${
+                          selectedCategory === cat
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                        }`}
+                      >
+                        <span>{cat}</span>
+                        <span className={`text-xs ${selectedCategory === cat ? 'text-purple-200' : 'text-gray-500'}`}>
+                          {categoryCounts[cat] || 0}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Selection info */}
-            <div className="px-4 py-2 bg-[#141414] text-xs text-gray-500">
+            <div className="px-4 py-2 bg-[#141414] text-xs text-gray-500 flex-shrink-0">
               {pendingSelection.length}/5 selected (min 1, max 5)
             </div>
             
-            {/* Coin list */}
-            <div className="max-h-[250px] overflow-y-auto scrollbar-thin">
+            {/* Coin list - takes remaining space */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin">
               {filteredCoins.map((coin) => {
                 const isSelected = pendingSelection.includes(coin.id);
                 const canSelect = pendingSelection.length < 5 || isSelected;
@@ -210,7 +265,7 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between p-3 border-t border-gray-700 bg-[#141414]">
+            <div className="flex items-center justify-between p-4 border-t border-gray-700 bg-[#141414] flex-shrink-0">
               <button
                 onClick={handleCancel}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
@@ -220,7 +275,7 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
               <button
                 onClick={handleSave}
                 disabled={pendingSelection.length === 0}
-                className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                className={`px-6 py-2 text-sm rounded-lg transition-colors ${
                   hasChanges && pendingSelection.length > 0
                     ? 'bg-purple-600 text-white hover:bg-purple-500'
                     : 'bg-gray-700 text-gray-400'

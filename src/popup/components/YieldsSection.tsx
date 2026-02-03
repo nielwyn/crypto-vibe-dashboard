@@ -1,5 +1,6 @@
 import { YieldCard } from './YieldCard';
 import { YieldPool } from '../../types';
+import { useDragScroll } from '../../hooks/useDragScroll';
 
 interface YieldsSectionProps {
   yields: YieldPool[];
@@ -8,6 +9,8 @@ interface YieldsSectionProps {
 
 export function YieldsSection({ yields, loading }: YieldsSectionProps) {
   const hotYield = yields.find(pool => pool.apy > 8);
+  const loadingScrollRef = useDragScroll<HTMLDivElement>();
+  const yieldsScrollRef = useDragScroll<HTMLDivElement>();
 
   return (
     <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 p-3 mb-3">
@@ -21,7 +24,7 @@ export function YieldsSection({ yields, loading }: YieldsSectionProps) {
       </div>
       
       {loading ? (
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+        <div ref={loadingScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex-shrink-0 w-20 bg-[#242424] rounded-lg p-2 animate-pulse">
               <div className="h-3 bg-gray-700 rounded mb-1" />
@@ -31,7 +34,7 @@ export function YieldsSection({ yields, loading }: YieldsSectionProps) {
           ))}
         </div>
       ) : yields.length > 0 ? (
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+        <div ref={yieldsScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {yields.map((pool) => (
             <YieldCard key={pool.pool} pool={pool} />
           ))}

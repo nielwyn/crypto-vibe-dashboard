@@ -174,7 +174,8 @@ function extractHeadlinesFromMarkdown(
   let match;
 
   while ((match = linkPattern.exec(markdown)) !== null) {
-    const title = match[1].trim();
+    // Strip markdown bold markers (**) from title
+    const title = match[1].trim().replace(/^\*\*|\*\*$/g, '').trim();
     const url = match[2].trim();
     
     // Skip non-article URLs (images, assets, etc.)
