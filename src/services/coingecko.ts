@@ -22,6 +22,23 @@ export const coingecko = {
       return getMockCoinData(coinIds);
     }
   },
+
+  async getBTCDominance(): Promise<number> {
+    try {
+      const response = await fetch(`${BASE_URL}/global`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch global data');
+      }
+      
+      const data = await response.json();
+      return data.data?.market_cap_percentage?.btc || 50;
+    } catch (error) {
+      console.error('CoinGecko global API error:', error);
+      // Return default value
+      return 50;
+    }
+  },
 };
 
 function getMockCoinData(coinIds: string[]): CoinData[] {

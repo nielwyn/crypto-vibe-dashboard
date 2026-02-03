@@ -4,6 +4,17 @@ export interface MarketSentiment {
   lastUpdated: number;
 }
 
+export interface FearGreedData {
+  score: number; // 0-100
+  state: 'extreme-fear' | 'fear' | 'greed' | 'extreme-greed';
+  components: {
+    volatility: number;
+    momentum: number;
+    btcDominance: number;
+  };
+  lastUpdated: number;
+}
+
 export interface CoinData {
   id: string;
   symbol: string;

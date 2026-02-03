@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Crypto Vibe Dashboard",
   "version": "1.0.0",
-  "description": "AI-powered crypto market sentiment dashboard",
+  "description": "AI-powered crypto market sentiment & DeFi yields dashboard",
   "permissions": ["storage", "alarms"],
   "action": {
     "default_popup": "popup.html",
@@ -19,6 +19,8 @@
   },
   "host_permissions": [
     "https://api.coingecko.com/*",
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "https://yields.llama.fi/*",
+    "https://api.firecrawl.dev/*"
   ]
 }
