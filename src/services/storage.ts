@@ -3,6 +3,7 @@ import { UserPreferences, CoinData, AIAnalysis, NewsItem, UserStats, YieldPool }
 const STORAGE_KEYS = {
   PREFERENCES: 'userPreferences',
   COIN_CACHE: 'coinCache',
+  COIN_CACHE_TIMESTAMP: 'coinCacheTimestamp',
   AI_CACHE: 'aiCache',
   NEWS_CACHE: 'newsCache',
   USER_STATS: 'userStats',
@@ -42,7 +43,16 @@ export const storage = {
   },
 
   async setCoinCache(coins: CoinData[]): Promise<void> {
-    await chrome.storage.local.set({ [STORAGE_KEYS.COIN_CACHE]: coins });
+    await chrome.storage.local.set({ 
+      [STORAGE_KEYS.COIN_CACHE]: coins,
+      [STORAGE_KEYS.COIN_CACHE_TIMESTAMP]: Date.now(),
+    });
+  },
+
+  async getCoinCacheTimestamp(): Promise<number> {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.COIN_CACHE_TIMESTAMP);
+    const timestamp = result[STORAGE_KEYS.COIN_CACHE_TIMESTAMP];
+    return typeof timestamp === 'number' ? timestamp : 0;
   },
 
   async getAICache(): Promise<AIAnalysis | null> {
