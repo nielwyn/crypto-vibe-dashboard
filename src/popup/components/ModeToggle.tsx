@@ -7,23 +7,23 @@ interface ModeToggleProps {
 
 export const ModeToggle: React.FC<ModeToggleProps> = ({ mode, onToggle }) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-0">
       <button
         onClick={() => onToggle('professional')}
-        className={`px-3 py-1 text-xs font-medium rounded-l transition-colors ${
+        className={`px-3 py-1 text-xs font-medium rounded-l-lg transition-all duration-200 ${
           mode === 'professional'
-            ? 'bg-purple-600 text-white'
-            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            ? 'bg-gradient-to-r from-[#9945ff] to-[#7a37d6] text-white shadow-[0_0_10px_rgba(153,69,255,0.3)]'
+            : 'bg-[#1a1a3e]/60 text-[#ab9ff2]/60 hover:bg-[#1a1a3e] hover:text-[#ab9ff2]'
         }`}
       >
         🤓 Pro
       </button>
       <button
         onClick={() => onToggle('degen')}
-        className={`px-3 py-1 text-xs font-medium rounded-r transition-colors ${
+        className={`px-3 py-1 text-xs font-medium rounded-r-lg transition-all duration-200 ${
           mode === 'degen'
-            ? 'bg-purple-600 text-white'
-            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            ? 'bg-gradient-to-r from-[#9945ff] to-[#7a37d6] text-white shadow-[0_0_10px_rgba(153,69,255,0.3)]'
+            : 'bg-[#1a1a3e]/60 text-[#ab9ff2]/60 hover:bg-[#1a1a3e] hover:text-[#ab9ff2]'
         }`}
       >
         🚀 Degen

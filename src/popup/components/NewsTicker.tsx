@@ -57,11 +57,11 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
   const getSentimentBadge = (sentiment: string) => {
     switch (sentiment) {
       case 'positive':
-        return { emoji: '🟢', label: 'Bullish', bgClass: 'bg-green-900/40 text-green-400 border-green-500/30' };
+        return { emoji: '🟢', label: 'Bullish', bgClass: 'bg-[#14f195]/15 text-[#14f195] border-[#14f195]/30' };
       case 'negative':
-        return { emoji: '🔴', label: 'Bearish', bgClass: 'bg-red-900/40 text-red-400 border-red-500/30' };
+        return { emoji: '🔴', label: 'Bearish', bgClass: 'bg-[#f43f5e]/15 text-[#f43f5e] border-[#f43f5e]/30' };
       default:
-        return { emoji: '⚪', label: 'Neutral', bgClass: 'bg-gray-800/40 text-gray-400 border-gray-600/30' };
+        return { emoji: '⚪', label: 'Neutral', bgClass: 'bg-[#ab9ff2]/15 text-[#ab9ff2] border-[#ab9ff2]/30' };
     }
   };
 
@@ -75,8 +75,8 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
 
   if (news.length === 0) {
     return (
-      <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 p-4 mb-3">
-        <div className="flex items-center gap-2 text-gray-500">
+      <div className="phantom-card p-4 mb-3">
+        <div className="flex items-center gap-2 text-[#ab9ff2]/50">
           <span className="text-lg">📰</span>
           <span className="text-sm">No news available</span>
         </div>
@@ -86,19 +86,19 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
 
   return (
     <div 
-      className="bg-[#1a1a1a] rounded-xl border border-gray-800 overflow-hidden mb-3"
+      className="phantom-card overflow-hidden mb-3"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800/50">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[#2a2a4a]/50">
         <div className="flex items-center gap-2">
           <span className="text-sm">📰</span>
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Latest News</span>
+          <span className="text-xs font-semibold text-[#ab9ff2]/70 uppercase tracking-wider">Latest News</span>
         </div>
-        <div className="flex items-center gap-1 text-xs text-gray-500">
+        <div className="flex items-center gap-1 text-xs text-[#ab9ff2]/50">
           <span>{currentIndex + 1}</span>
           <span>/</span>
           <span>{news.length}</span>
@@ -112,7 +112,7 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
           <>
             <button
               onClick={goPrev}
-              className="absolute left-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center text-white/60 hover:text-white bg-gradient-to-r from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute left-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center text-white/60 hover:text-white bg-gradient-to-r from-[#0c0c1d]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               aria-label="Previous news"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
             </button>
             <button
               onClick={goNext}
-              className="absolute right-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center text-white/60 hover:text-white bg-gradient-to-l from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute right-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center text-white/60 hover:text-white bg-gradient-to-l from-[#0c0c1d]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               aria-label="Next news"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,18 +157,18 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
                         <span>{sentiment.emoji}</span>
                         <span>{sentiment.label}</span>
                       </span>
-                      <span className="text-xs text-gray-500">{formatTimeAgo(item.scrapedAt)}</span>
+                      <span className="text-xs text-[#ab9ff2]/50">{formatTimeAgo(item.scrapedAt)}</span>
                     </div>
 
                     {/* Title */}
-                    <h4 className="text-sm font-medium text-white leading-snug mb-2 line-clamp-2 group-hover:text-purple-400 transition-colors">
+                    <h4 className="text-sm font-medium text-white leading-snug mb-2 line-clamp-2 group-hover:text-[#ab9ff2] transition-colors">
                       {item.title}
                     </h4>
 
                     {/* Source & External Link Icon */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">{item.source}</span>
-                      <svg className="w-3.5 h-3.5 text-gray-500 group-hover:text-purple-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <span className="text-xs text-[#ab9ff2]/50">{item.source}</span>
+                      <svg className="w-3.5 h-3.5 text-[#ab9ff2]/50 group-hover:text-[#ab9ff2] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </div>
@@ -189,8 +189,8 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
               onClick={() => goToSlide(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? 'bg-purple-500 w-4'
-                  : 'bg-gray-600 hover:bg-gray-500'
+                  ? 'bg-[#9945ff] w-4'
+                  : 'bg-[#2a2a4a] hover:bg-[#ab9ff2]/50'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

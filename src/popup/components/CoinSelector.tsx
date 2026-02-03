@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 
 interface CoinSelectorProps {
   selectedCoins: string[];
@@ -135,53 +136,53 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
     <div className="relative">
       <button
         onClick={handleOpen}
-        className="w-6 h-6 rounded-full bg-purple-600 text-white text-sm hover:bg-purple-500 transition-colors flex items-center justify-center"
+        className="w-6 h-6 rounded-full bg-[#9945ff] text-white text-sm hover:bg-[#7a37d6] transition-colors flex items-center justify-center"
         title="Select coins"
       >
         +
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <>
           <div
             className="fixed inset-0 z-[60] bg-black/80"
             onClick={handleCancel}
           />
-          <div className="fixed inset-0 z-[60] bg-[#1a1a1a] flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-[#0c0c1d] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-[#2a2a4a] flex-shrink-0">
               <h3 className="text-white font-medium">Select Tokens</h3>
-              <button onClick={handleCancel} className="text-gray-400 hover:text-white text-xl">✕</button>
+              <button onClick={handleCancel} className="text-[#ab9ff2] hover:text-white text-xl">✕</button>
             </div>
             
             {/* Search */}
-            <div className="p-3 border-b border-gray-800 flex-shrink-0">
+            <div className="p-3 border-b border-[#2a2a4a] flex-shrink-0">
               <input
                 type="text"
                 placeholder="Search tokens..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 bg-[#242424] border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                className="w-full px-3 py-2 bg-[#1a1a3e] border border-[#2a2a4a] rounded-lg text-white text-sm placeholder-[#ab9ff2]/50 focus:outline-none focus:border-[#9945ff]"
                 autoFocus
               />
             </div>
 
             {/* Category Filter - Collapsible */}
-            <div className="border-b border-gray-800 flex-shrink-0">
+            <div className="border-b border-[#2a2a4a] flex-shrink-0">
               {/* Toggle Button */}
               <button
                 onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-                className="w-full px-4 py-3 flex items-center justify-between text-sm hover:bg-gray-800/30 transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between text-sm hover:bg-[#1a1a3e]/30 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-400">Filter:</span>
+                  <span className="text-[#ab9ff2]">Filter:</span>
                   <span className="text-white font-medium">{selectedCategory}</span>
                   {selectedCategory !== 'All' && (
-                    <span className="text-xs text-gray-500">({categoryCounts[selectedCategory] || 0})</span>
+                    <span className="text-xs text-[#ab9ff2]/60">({categoryCounts[selectedCategory] || 0})</span>
                   )}
                 </div>
                 <svg 
-                  className={`w-4 h-4 text-gray-400 transition-transform ${showCategoryFilter ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 text-[#ab9ff2] transition-transform ${showCategoryFilter ? 'rotate-180' : ''}`}
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -192,7 +193,7 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
               
               {/* Category Options */}
               {showCategoryFilter && (
-                <div className="bg-[#141414] border-t border-gray-800">
+                <div className="bg-[#0c0c1d] border-t border-[#2a2a4a]">
                   <div className="grid grid-cols-2 gap-1 p-2">
                     {CATEGORIES.map(cat => (
                       <button
@@ -200,12 +201,12 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
                         onClick={() => handleSelectCategory(cat)}
                         className={`px-3 py-2.5 text-sm rounded-lg text-left transition-colors flex items-center justify-between ${
                           selectedCategory === cat
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700'
+                            ? 'bg-[#9945ff] text-white'
+                            : 'bg-[#1a1a3e]/50 text-gray-300 hover:bg-[#1a1a3e]'
                         }`}
                       >
                         <span>{cat}</span>
-                        <span className={`text-xs ${selectedCategory === cat ? 'text-purple-200' : 'text-gray-500'}`}>
+                        <span className={`text-xs ${selectedCategory === cat ? 'text-purple-200' : 'text-[#ab9ff2]/60'}`}>
                           {categoryCounts[cat] || 0}
                         </span>
                       </button>
@@ -216,7 +217,7 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
             </div>
             
             {/* Selection info */}
-            <div className="px-4 py-2 bg-[#141414] text-xs text-gray-500 flex-shrink-0">
+            <div className="px-4 py-2 bg-[#0c0c1d] text-xs text-[#ab9ff2]/60 flex-shrink-0">
               {pendingSelection.length}/5 selected (min 1, max 5)
             </div>
             
@@ -232,43 +233,43 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
                     key={coin.id}
                     onClick={() => !isLastSelected && toggleCoin(coin.id)}
                     disabled={!canSelect && !isSelected}
-                    className={`w-full text-left px-4 py-2.5 transition-colors border-b border-gray-800/50 ${
+                    className={`w-full text-left px-4 py-2.5 transition-colors border-b border-[#2a2a4a]/50 ${
                       isSelected
-                        ? 'bg-purple-900/30 text-white'
+                        ? 'bg-[#9945ff]/20 text-white'
                         : canSelect
-                        ? 'hover:bg-gray-800/50 text-gray-300'
+                        ? 'hover:bg-[#1a1a3e]/50 text-gray-300'
                         : 'text-gray-600 cursor-not-allowed'
                     } ${isLastSelected ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                          isSelected ? 'border-purple-500 bg-purple-500' : 'border-gray-600'
+                          isSelected ? 'border-[#9945ff] bg-[#9945ff]' : 'border-[#2a2a4a]'
                         }`}>
                           {isSelected && <span className="text-white text-xs">✓</span>}
                         </div>
                         <div>
                           <span className="text-sm font-semibold">{coin.symbol}</span>
-                          <span className="text-xs text-gray-500 ml-2">{coin.name}</span>
+                          <span className="text-xs text-[#ab9ff2]/60 ml-2">{coin.name}</span>
                         </div>
                       </div>
-                      <span className="text-xs text-gray-600">{coin.category}</span>
+                      <span className="text-xs text-[#ab9ff2]/50">{coin.category}</span>
                     </div>
                   </button>
                 );
               })}
               {filteredCoins.length === 0 && (
-                <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                <div className="px-4 py-8 text-center text-[#ab9ff2]/50 text-sm">
                   No tokens found
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between p-4 border-t border-gray-700 bg-[#141414] flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-t border-[#2a2a4a] bg-[#0c0c1d] flex-shrink-0">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-sm text-[#ab9ff2] hover:text-white transition-colors"
               >
                 Cancel
               </button>
@@ -277,15 +278,16 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
                 disabled={pendingSelection.length === 0}
                 className={`px-6 py-2 text-sm rounded-lg transition-colors ${
                   hasChanges && pendingSelection.length > 0
-                    ? 'bg-purple-600 text-white hover:bg-purple-500'
-                    : 'bg-gray-700 text-gray-400'
+                    ? 'bg-[#9945ff] text-white hover:bg-[#7a37d6]'
+                    : 'bg-[#1a1a3e] text-[#ab9ff2]/60'
                 }`}
               >
                 {hasChanges ? 'Save Changes' : 'Done'}
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );

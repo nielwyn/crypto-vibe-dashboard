@@ -11,7 +11,6 @@ export function useDragScroll<T extends HTMLElement>() {
     startX: 0,
     scrollLeft: 0,
     hasMoved: false,
-    mouseDownTarget: null as EventTarget | null,
   });
 
   useEffect(() => {
@@ -28,11 +27,11 @@ export function useDragScroll<T extends HTMLElement>() {
       state.hasMoved = false;
       state.startX = e.pageX;
       state.scrollLeft = element.scrollLeft;
-      state.mouseDownTarget = e.target;
       element.style.cursor = 'grabbing';
       element.style.userSelect = 'none';
     };
 
+    // Handle move on document so dragging continues even when cursor leaves element
     const handleMouseMove = (e: MouseEvent) => {
       if (!state.isDragging) return;
 
@@ -41,12 +40,12 @@ export function useDragScroll<T extends HTMLElement>() {
       
       if (Math.abs(walk) > 5) {
         state.hasMoved = true;
-        e.preventDefault();
       }
       
       element.scrollLeft = state.scrollLeft + walk;
     };
 
+    // Handle mouseup on document so drag ends even when cursor is outside
     const handleMouseUp = () => {
       if (!state.isDragging) return;
       
@@ -67,18 +66,17 @@ export function useDragScroll<T extends HTMLElement>() {
 
     element.style.cursor = 'grab';
     
-    // Use capture phase for all events to intercept before children handle them
+    // Mouse down on element only
     element.addEventListener('mousedown', handleMouseDown, true);
-    element.addEventListener('mousemove', handleMouseMove, true);
-    element.addEventListener('mouseup', handleMouseUp, true);
-    element.addEventListener('mouseleave', handleMouseUp, true);
+    // Move and up on document for smooth dragging
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
     element.addEventListener('click', handleClick, true);
 
     return () => {
       element.removeEventListener('mousedown', handleMouseDown, true);
-      element.removeEventListener('mousemove', handleMouseMove, true);
-      element.removeEventListener('mouseup', handleMouseUp, true);
-      element.removeEventListener('mouseleave', handleMouseUp, true);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
       element.removeEventListener('click', handleClick, true);
     };
   }, []);

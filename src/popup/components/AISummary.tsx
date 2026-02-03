@@ -43,9 +43,9 @@ export const AISummary: React.FC<AISummaryProps> = ({
   }, [analysis]);
 
   return (
-    <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 overflow-hidden mb-3">
+    <div className="phantom-card overflow-hidden mb-3">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-800">
+      <div className="flex items-center justify-between p-3 border-b border-[#2a2a4a]/50">
         <span className="text-sm font-medium text-white">🤖 AI Analysis</span>
         <ModeToggle mode={mode} onToggle={onModeChange} />
       </div>
@@ -54,29 +54,29 @@ export const AISummary: React.FC<AISummaryProps> = ({
       <div className="p-3 max-h-32 overflow-y-auto scrollbar-thin text-sm text-gray-300">
         {loading ? (
           <div className="animate-pulse space-y-2">
-            <div className="h-3 bg-gray-700 rounded w-full" />
-            <div className="h-3 bg-gray-700 rounded w-4/5" />
+            <div className="h-3 bg-[#2a2a4a] rounded w-full" />
+            <div className="h-3 bg-[#2a2a4a] rounded w-4/5" />
           </div>
         ) : analysis ? (
           <p className="leading-relaxed">{displayedText}
-            {isTyping && <span className="animate-pulse">|</span>}
+            {isTyping && <span className="animate-pulse text-[#ab9ff2]">|</span>}
           </p>
         ) : (
-          <p className="leading-relaxed text-gray-500 italic">Click "Refresh" to generate AI analysis</p>
+          <p className="leading-relaxed text-[#ab9ff2]/50 italic">Click "Refresh" to generate AI analysis</p>
         )}
       </div>
       
       {/* Footer */}
-      <div className="flex items-center justify-between p-3 border-t border-gray-800 bg-[#141414]">
+      <div className="flex items-center justify-between p-3 border-t border-[#2a2a4a]/50 bg-[#0c0c1d]/50">
         <button 
           onClick={onRefresh}
           disabled={loading || isTyping}
-          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:text-gray-600"
+          className="flex items-center gap-1 text-xs text-[#ab9ff2] hover:text-[#9945ff] disabled:text-gray-600 transition-colors"
         >
           🔄 Refresh
         </button>
         {analysis && !loading && !isTyping && (
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-[#ab9ff2]/50">
             ⏱️ {new Date(analysis.generatedAt).toLocaleTimeString()}
           </span>
         )}

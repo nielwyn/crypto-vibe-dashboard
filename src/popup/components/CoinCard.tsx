@@ -36,32 +36,32 @@ export const CoinCard: React.FC<CoinCardProps> = memo(({ coin, timeframe = '7d',
   const sparklineData = getSparklineData();
 
   return (
-    <div className="flex-shrink-0 w-24 bg-[#242424] rounded-lg p-2 transition-all duration-300 hover:bg-[#2a2a2a]">
-      <div className="flex items-center gap-1 mb-1">
-        <span className="text-xs font-bold text-white">{coin.symbol.toUpperCase()}</span>
+    <div className="flex-shrink-0 w-28 bg-[#1a1a3e]/60 backdrop-blur-sm rounded-xl p-3 transition-all duration-300 hover:bg-[#1a1a3e] hover:shadow-[0_0_20px_rgba(153,69,255,0.15)] border border-[#2a2a4a]/50">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-sm font-bold text-white">{coin.symbol.toUpperCase()}</span>
       </div>
-      <div className="text-xs text-gray-400 mb-1 truncate">
+      <div className="text-sm text-[#ab9ff2] mb-1 truncate font-medium">
         ${coin.current_price.toLocaleString(undefined, {
           minimumFractionDigits: 0,
-          maximumFractionDigits: coin.current_price < 1 ? 4 : 0,
+          maximumFractionDigits: coin.current_price < 1 ? 4 : 2,
         })}
       </div>
       <div
-        className={`text-sm font-medium ${
+        className={`text-sm font-semibold ${
           isPositive
-            ? 'text-green-400'
-            : 'text-red-400'
+            ? 'text-[#14f195]'
+            : 'text-[#f43f5e]'
         }`}
       >
-        {isPositive ? '+' : ''}{coin.price_change_percentage_24h.toFixed(1)}%
+        {isPositive ? '+' : ''}{coin.price_change_percentage_24h.toFixed(2)}%
       </div>
       {sparklineData.length > 0 && (
-        <div className="mt-1">
+        <div className="mt-2">
           <Sparkline
             data={sparklineData}
-            width={80}
-            height={20}
-            color={isPositive ? '#22c55e' : '#ef4444'}
+            width={88}
+            height={24}
+            color={isPositive ? '#14f195' : '#f43f5e'}
           />
         </div>
       )}

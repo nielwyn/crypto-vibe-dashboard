@@ -17,13 +17,13 @@ export const StreakCounter: React.FC<StreakCounterProps> = ({ streak }) => {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-orange-500 text-lg">🔥</span>
-        <span className="text-gray-300">
+        <span className="text-[#f97316] text-lg">🔥</span>
+        <span className="text-[#ab9ff2]/80">
           <span className="font-bold text-white">{streak}</span> day{streak !== 1 ? 's' : ''} streak
         </span>
       </div>
       {getDiamondHandsMessage() && (
-        <div className="text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
+        <div className="text-xs font-bold bg-gradient-to-r from-[#9945ff] to-[#14f195] bg-clip-text text-transparent animate-pulse">
           {getDiamondHandsMessage()}
         </div>
       )}

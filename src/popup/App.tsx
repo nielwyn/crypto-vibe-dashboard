@@ -140,24 +140,24 @@ function App() {
     return Math.round((correct / completed.length) * 100);
   };
 
-  // Get mood-based background classes
+  // Get mood-based background classes - Phantom style
   const getMoodBackground = () => {
     if (fearGreed.score >= 50) {
-      return 'bg-gradient-to-b from-crypto-dark via-crypto-dark to-crypto-dark/95 [box-shadow:inset_0_0_80px_rgba(0,255,136,0.1)]';
+      return 'popup-container [box-shadow:inset_0_0_100px_rgba(20,241,149,0.05)]';
     } else if (fearGreed.score < 50) {
-      return 'bg-gradient-to-b from-crypto-dark via-crypto-dark to-crypto-dark/95 [box-shadow:inset_0_0_80px_rgba(255,51,102,0.1)]';
+      return 'popup-container [box-shadow:inset_0_0_100px_rgba(244,63,94,0.05)]';
     }
-    return 'bg-crypto-dark';
+    return 'popup-container';
   };
 
   return (
-    <div className={`popup-container transition-all duration-1000 ${getMoodBackground()}`}>
+    <div className={`transition-all duration-1000 ${getMoodBackground()}`}>
       {/* Confetti overlay */}
       <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
       
-      {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 h-12 bg-[#0f0f0f] border-b border-gray-800 z-50 px-4 flex items-center justify-center">
-        <h1 className="text-lg font-bold text-white">CRYPTO VIBE</h1>
+      {/* Phantom-style Header */}
+      <header className="fixed top-0 left-0 right-0 h-14 bg-gradient-to-r from-[#0c0c1d] via-[#13132b] to-[#0c0c1d] border-b border-[#2a2a4a]/50 z-50 px-4 flex items-center justify-center backdrop-blur-xl">
+        <h1 className="text-lg font-bold phantom-gradient-text tracking-wide">CRYPTO VIBE</h1>
         {!coinsLoading && coins.length > 0 && (
           <div className="absolute left-4">
             <Mascot fearGreed={fearGreed} />
@@ -169,7 +169,7 @@ function App() {
       <div className="content-area scrollbar-thin">
         {/* Golden Day Celebration */}
         {isGoldenDay && confettiTrigger && (
-          <div className="mb-3 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 text-black font-bold text-center py-3 rounded-lg animate-pulse">
+          <div className="mb-4 bg-gradient-to-r from-[#9945ff] via-[#14f195] to-[#9945ff] text-white font-bold text-center py-3 rounded-2xl animate-pulse phantom-glow">
             🎉 GOLDEN DAY! All coins +10%! 🎉
           </div>
         )}
@@ -188,18 +188,18 @@ function App() {
           onModeChange={handleModeChange}
         />
 
-        {/* Live Prices Section */}
-        <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 p-3 mb-3">
+        {/* Live Prices Section - Phantom Style */}
+        <div className="phantom-card p-4 mb-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-white">📊 Live Prices</span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-white">Live Prices</span>
               <TimeframeSelector 
                 selected={chartTimeframe} 
                 onChange={setChartTimeframe} 
               />
               {isUpdating && (
-                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Updating..." />
+                <span className="w-2 h-2 bg-[#ab9ff2] rounded-full animate-pulse" title="Updating..." />
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -212,14 +212,14 @@ function App() {
           </div>
           
           {/* Horizontal scroll container with drag-to-scroll */}
-          <div ref={coinScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          <div ref={coinScrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
             {coinsLoading && coins.length === 0 ? (
               <>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-24 bg-[#242424] rounded-lg p-2 border border-gray-700 animate-pulse">
-                    <div className="h-3 bg-gray-700 rounded mb-1" />
-                    <div className="h-4 bg-gray-700 rounded mb-1" />
-                    <div className="h-8 bg-gray-700 rounded" />
+                  <div key={i} className="flex-shrink-0 w-28 bg-[#1a1a3e]/50 rounded-xl p-3 animate-pulse">
+                    <div className="h-3 bg-[#2a2a4a] rounded mb-2" />
+                    <div className="h-5 bg-[#2a2a4a] rounded mb-2" />
+                    <div className="h-10 bg-[#2a2a4a] rounded" />
                   </div>
                 ))}
               </>
@@ -235,9 +235,9 @@ function App() {
           </div>
           
           {/* Timeframe label */}
-          <div className="mt-2 flex items-center justify-between text-[10px] text-gray-500">
-            <span>Chart: {chartTimeframe === '24h' ? 'Last 24 hours' : 'Last 7 days'}</span>
-            {coins.length > 0 && <span>{coins.length} coin{coins.length !== 1 ? 's' : ''} tracked</span>}
+          <div className="mt-3 flex items-center justify-between text-xs text-[#ab9ff2]/60">
+            <span>{chartTimeframe === '24h' ? 'Last 24 hours' : 'Last 7 days'}</span>
+            {coins.length > 0 && <span>{coins.length} coin{coins.length !== 1 ? 's' : ''}</span>}
           </div>
         </div>
 
@@ -248,23 +248,23 @@ function App() {
         {news.length > 0 && <NewsTicker news={news} />}
       </div>
 
-      {/* Fixed Footer */}
+      {/* Phantom-style Footer */}
       {!coinsLoading && coins.length > 0 && (
-        <footer className="fixed bottom-0 left-0 right-0 h-12 bg-[#0f0f0f] border-t border-gray-800 px-4 flex items-center justify-between z-50">
-          <div className="flex items-center gap-1">
-            <span className="text-orange-400">🔥</span>
-            <span className="text-sm text-white">{userStats.streak}</span>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <span className="text-blue-400">🎯</span>
-            <span className="text-sm text-white">{calculateAccuracy() || 0}%</span>
+        <footer className="fixed bottom-0 left-0 right-0 h-14 bg-gradient-to-r from-[#0c0c1d] via-[#13132b] to-[#0c0c1d] border-t border-[#2a2a4a]/50 px-4 flex items-center justify-between z-50 backdrop-blur-xl">
+          <div className="flex items-center gap-2 bg-[#1a1a3e]/50 px-3 py-1.5 rounded-full">
+            <span className="text-orange-400 text-sm">🔥</span>
+            <span className="text-sm font-semibold text-white">{userStats.streak}</span>
           </div>
           
           <PredictionGame
             onPredict={handlePredict}
             accuracy={calculateAccuracy()}
           />
+          
+          <div className="flex items-center gap-2 bg-[#1a1a3e]/50 px-3 py-1.5 rounded-full">
+            <span className="text-[#ab9ff2] text-sm">🎯</span>
+            <span className="text-sm font-semibold text-white">{calculateAccuracy() || 0}%</span>
+          </div>
         </footer>
       )}
     </div>
