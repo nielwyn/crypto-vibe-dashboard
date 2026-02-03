@@ -174,8 +174,23 @@ function App() {
           <h1 className="text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
             Crypto Vibe Dashboard
           </h1>
-          {lastUpdated && <RefreshIndicator lastUpdated={lastUpdated} />}
+          <div className="flex items-center gap-2">
+            {lastUpdated && <RefreshIndicator lastUpdated={lastUpdated} />}
+            <button 
+              className="text-gray-400 hover:text-white transition-colors"
+              title="Settings (Coming Soon)"
+            >
+              ⚙️
+            </button>
+          </div>
         </div>
+
+        {/* Golden Day Celebration */}
+        {isGoldenDay && confettiTrigger && (
+          <div className="mb-4 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 text-black font-bold text-center py-3 rounded-lg animate-pulse">
+            🎉 GOLDEN DAY! All coins +10%! 🎉
+          </div>
+        )}
 
         {/* Market Mood Gauge */}
         {!coinsLoading && coins.length > 0 && (
