@@ -27,13 +27,14 @@ export const Mascot: React.FC<MascotProps> = ({ fearGreed }) => {
   const mascot = getMascot();
 
   return (
-    <div className="absolute top-4 right-4 flex flex-col items-center gap-1 z-10">
-      <div className={`text-4xl ${mascot.animation}`}>
+    <div className="relative flex items-center gap-1">
+      <span className={`text-2xl ${mascot.animation}`}>
         {mascot.emoji}
-      </div>
-      <div className="text-xs text-gray-400 whitespace-nowrap">
-        {mascot.label}
-      </div>
+      </span>
+      {/* Optional: small mood indicator below */}
+      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[8px] text-gray-500 whitespace-nowrap">
+        {mascot.label.split(' ')[0]}
+      </span>
     </div>
   );
 };

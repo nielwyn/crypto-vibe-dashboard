@@ -23,7 +23,7 @@ export const Confetti: React.FC<ConfettiProps> = ({ trigger, isGoldenDay = false
     : ['#00ff88', '#ff3366', '#8b5cf6', '#3b82f6', '#f59e0b'];
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50">
+    <div className="fixed inset-0 pointer-events-none z-[100]">
       {Array.from({ length: 50 }).map((_, i) => {
         const delay = Math.random() * 0.5;
         const duration = 2 + Math.random() * 2;

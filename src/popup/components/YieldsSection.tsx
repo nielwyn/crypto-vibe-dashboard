@@ -10,43 +10,32 @@ export function YieldsSection({ yields, loading }: YieldsSectionProps) {
   const hotYield = yields.find(pool => pool.apy > 8);
 
   return (
-    <div className="mb-4">
-      {/* Section Header */}
+    <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 p-3 mb-3">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-purple-400">💰 TOP DEFI YIELDS</h3>
-        <span className="text-xs text-gray-500">← Scroll →</span>
+        <span className="text-sm font-medium text-white">💰 Top Yields</span>
+        {hotYield && (
+          <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full animate-pulse">
+            🔥 {hotYield.apy.toFixed(1)}% on {hotYield.project}
+          </span>
+        )}
       </div>
-
-      {/* Loading State */}
+      
       {loading ? (
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex-shrink-0 w-[140px] bg-gray-900 rounded-lg p-3 animate-pulse">
-              <div className="h-4 bg-gray-800 rounded mb-2" />
-              <div className="h-3 bg-gray-800 rounded mb-2" />
-              <div className="h-3 bg-gray-800 rounded mb-2" />
-              <div className="h-6 bg-gray-800 rounded" />
+            <div key={i} className="flex-shrink-0 w-20 bg-[#242424] rounded-lg p-2 animate-pulse">
+              <div className="h-3 bg-gray-700 rounded mb-1" />
+              <div className="h-2 bg-gray-700 rounded mb-1" />
+              <div className="h-4 bg-gray-700 rounded" />
             </div>
           ))}
         </div>
       ) : yields.length > 0 ? (
-        <>
-          {/* Yields Cards */}
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {yields.map((pool) => (
-              <YieldCard key={pool.pool} pool={pool} />
-            ))}
-          </div>
-
-          {/* Hot Yield Alert */}
-          {hotYield && (
-            <div className="mt-3 bg-gradient-to-r from-orange-900/30 to-red-900/30 border border-orange-500/50 rounded-lg p-2 text-center">
-              <span className="text-sm font-bold text-orange-400">
-                🔥 Hot Yield Alert: {hotYield.apy.toFixed(2)}% on {hotYield.project}!
-              </span>
-            </div>
-          )}
-        </>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          {yields.map((pool) => (
+            <YieldCard key={pool.pool} pool={pool} />
+          ))}
+        </div>
       ) : (
         <div className="text-center text-gray-500 text-sm py-4">
           No yield data available
