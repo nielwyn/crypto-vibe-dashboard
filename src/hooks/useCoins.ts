@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { CoinData } from '../types';
 import { coingecko } from '../services/coingecko';
 import { storage } from '../services/storage';
 
 // Cache TTL: 30 seconds for coin data (prices change frequently)
 const COIN_CACHE_TTL = 30 * 1000;
+
+export type ChartTimeframe = '24h' | '7d';
 
 export function useCoins() {
   const [coins, setCoins] = useState<CoinData[]>([]);
@@ -13,9 +15,14 @@ export function useCoins() {
   const [selectedCoins, setSelectedCoins] = useState<string[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false); // For background updates
+  const [timeframe, setTimeframe] = useState<ChartTimeframe>('7d');
+  
+  // Track if this is the initial load
+  const isInitialLoad = useRef(true);
 
   // Load coins with cache-first strategy
-  const fetchCoins = useCallback(async (forceRefresh = false) => {
+  const fetchCoins = useCallback(async (forceRefresh = false, silent = false) => {
     try {
       setError(null);
       
@@ -34,6 +41,7 @@ export function useCoins() {
           setLoading(false);
           setIsFromCache(true);
           setLastUpdated(new Date(cacheTimestamp));
+          isInitialLoad.current = false;
           
           // If cache is fresh, don't fetch new data yet
           if (cacheAge < COIN_CACHE_TTL) {
@@ -41,11 +49,18 @@ export function useCoins() {
             return;
           }
           console.log('Cache stale, fetching fresh data in background');
-        } else {
+        } else if (isInitialLoad.current) {
           setLoading(true);
         }
+      } else if (!silent) {
+        // Only show loading on initial load, not on updates
+        if (isInitialLoad.current) {
+          setLoading(true);
+        } else {
+          setIsUpdating(true);
+        }
       } else {
-        setLoading(true);
+        setIsUpdating(true);
       }
       
       // Fetch fresh data from CoinGecko
@@ -55,6 +70,7 @@ export function useCoins() {
         setCoins(coinData);
         setLastUpdated(new Date());
         setIsFromCache(false);
+        isInitialLoad.current = false;
         
         // Save to cache with timestamp
         await storage.setCoinCache(coinData);
@@ -72,23 +88,42 @@ export function useCoins() {
       }
     } finally {
       setLoading(false);
+      setIsUpdating(false);
     }
   }, [coins.length]);
 
+  // Optimized update that doesn't cause flickering
   const updateSelectedCoins = useCallback(async (newCoins: string[]) => {
+    // Optimistically update selected coins immediately
+    setSelectedCoins(newCoins);
+    
+    // Save preferences
     const prefs = await storage.getPreferences();
     await storage.setPreferences({ ...prefs, selectedCoins: newCoins });
-    setSelectedCoins(newCoins);
-    // Clear cache when coins change
+    
+    // Filter current coins to only show selected ones (instant UI update)
+    setCoins(prevCoins => {
+      const filtered = prevCoins.filter(c => newCoins.includes(c.id));
+      // Keep existing coins that are still selected
+      return filtered;
+    });
+    
+    // Fetch new data silently in background
     coingecko.clearCache();
-    await fetchCoins(true);
+    await fetchCoins(true, true);
   }, [fetchCoins]);
+
+  // Change chart timeframe
+  const updateTimeframe = useCallback((newTimeframe: ChartTimeframe) => {
+    setTimeframe(newTimeframe);
+    // Could fetch different sparkline data based on timeframe if API supports it
+  }, []);
 
   useEffect(() => {
     fetchCoins();
     
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(() => fetchCoins(true), 30000);
+    // Auto-refresh every 30 seconds (silent refresh)
+    const interval = setInterval(() => fetchCoins(true, true), 30000);
     
     return () => clearInterval(interval);
   }, [fetchCoins]);
@@ -100,7 +135,10 @@ export function useCoins() {
     selectedCoins,
     lastUpdated,
     isFromCache,
+    isUpdating,
+    timeframe,
     refetch: () => fetchCoins(true),
     updateSelectedCoins,
+    updateTimeframe,
   };
 }

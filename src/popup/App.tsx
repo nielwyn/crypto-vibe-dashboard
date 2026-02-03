@@ -3,6 +3,7 @@ import { FearGreedGauge } from './components/FearGreedGauge';
 import { AISummary } from './components/AISummary';
 import { CoinCard } from './components/CoinCard';
 import { CoinSelector } from './components/CoinSelector';
+import { TimeframeSelector, ChartTimeframe } from './components/TimeframeSelector';
 import { NewsTicker } from './components/NewsTicker';
 import { RefreshIndicator } from './components/RefreshIndicator';
 import { Mascot } from './components/Mascot';
@@ -18,14 +19,14 @@ import { CoinData, UserStats } from '../types';
 import { storage } from '../services/storage';
 
 function App() {
-  const { coins, loading: coinsLoading, selectedCoins, lastUpdated, updateSelectedCoins } = useCoins();
+  const { coins, loading: coinsLoading, selectedCoins, lastUpdated, updateSelectedCoins, isUpdating } = useCoins();
   const { analysis, loading: aiLoading, generateAnalysis, loadCachedAnalysis } = useAI();
   const { news } = useNews();
   const { yields, loading: yieldsLoading } = useYields();
   const { fearGreed } = useFearGreed(coins);
   
-  const [previousPrices, setPreviousPrices] = useState<Record<string, number>>({});
   const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
+  const [chartTimeframe, setChartTimeframe] = useState<ChartTimeframe>('7d');
   const [userStats, setUserStats] = useState<UserStats>({
     streak: 0,
     lastVisit: 0,
@@ -57,15 +58,6 @@ function App() {
   useEffect(() => {
     loadCachedAnalysis();
   }, [loadCachedAnalysis]);
-
-  useEffect(() => {
-    // Track price changes for flash animation
-    const newPrices: Record<string, number> = {};
-    coins.forEach((coin) => {
-      newPrices[coin.id] = coin.current_price;
-    });
-    setPreviousPrices(newPrices);
-  }, [coins]);
 
   // Check for all-green confetti trigger
   useEffect(() => {
@@ -202,8 +194,17 @@ function App() {
         <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 p-3 mb-3">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-white">📊 Live Prices</span>
             <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-white">📊 Live Prices</span>
+              {isUpdating && (
+                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Updating..." />
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <TimeframeSelector 
+                selected={chartTimeframe} 
+                onChange={setChartTimeframe} 
+              />
               {lastUpdated && <RefreshIndicator lastUpdated={lastUpdated} />}
               <CoinSelector
                 selectedCoins={selectedCoins}
@@ -214,7 +215,7 @@ function App() {
           
           {/* Horizontal scroll container */}
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-            {coinsLoading ? (
+            {coinsLoading && coins.length === 0 ? (
               <>
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex-shrink-0 w-24 bg-[#242424] rounded-lg p-2 border border-gray-700 animate-pulse">
@@ -229,10 +230,16 @@ function App() {
                 <CoinCard
                   key={coin.id}
                   coin={coin}
-                  previousPrice={previousPrices[coin.id]}
+                  timeframe={chartTimeframe}
                 />
               ))
             )}
+          </div>
+          
+          {/* Timeframe label */}
+          <div className="mt-2 flex items-center justify-between text-[10px] text-gray-500">
+            <span>Chart: {chartTimeframe === '24h' ? 'Last 24 hours' : 'Last 7 days'}</span>
+            {coins.length > 0 && <span>{coins.length} coin{coins.length !== 1 ? 's' : ''} tracked</span>}
           </div>
         </div>
 
