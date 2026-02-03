@@ -46,9 +46,11 @@ export function calculateFearGreedIndex(data: MarketData): FearGreedData {
 
 function normalizeVolatility(volatility: number): number {
   // Invert: high volatility = low score (fear)
-  if (volatility > 10) return 10;
-  if (volatility < 1) return 90;
-  return 100 - (volatility * 9);
+  // volatility 1% => 90, volatility 10% => 10
+  if (volatility >= 10) return 10;
+  if (volatility <= 1) return 90;
+  // Linear interpolation between 1% and 10%
+  return Math.max(10, Math.min(90, 90 - ((volatility - 1) / 9) * 80));
 }
 
 function normalizeMomentum(change: number): number {
@@ -58,9 +60,11 @@ function normalizeMomentum(change: number): number {
 
 function normalizeBtcDominance(btcD: number): number {
   // Low BTC.D (<40%) = Greed (altseason), High (>60%) = Fear
-  if (btcD > 60) return 20;
-  if (btcD < 40) return 80;
-  return 100 - (btcD - 40) * 3;
+  // btcD 40% => 80, btcD 60% => 20
+  if (btcD >= 60) return 20;
+  if (btcD <= 40) return 80;
+  // Linear interpolation between 40% and 60%
+  return Math.max(20, Math.min(80, 80 - ((btcD - 40) * 3)));
 }
 
 function getState(score: number): 'extreme-fear' | 'fear' | 'greed' | 'extreme-greed' {

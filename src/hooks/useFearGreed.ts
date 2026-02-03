@@ -6,7 +6,7 @@ import { coingecko } from '../services/coingecko';
 export function useFearGreed(coins: CoinData[]) {
   const [fearGreed, setFearGreed] = useState<FearGreedData>({
     score: 50,
-    state: 'greed',
+    state: 'fear',
     components: {
       volatility: 50,
       momentum: 50,
