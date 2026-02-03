@@ -40,31 +40,29 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center justify-between transition-colors"
+        className="w-6 h-6 rounded-full bg-gray-700 text-white text-sm hover:bg-gray-600 transition-colors flex items-center justify-center"
+        title="Select coins"
       >
-        <span className="text-sm">
-          {selectedCoins.length} coin{selectedCoins.length !== 1 ? 's' : ''} tracked
-        </span>
-        <span className="text-lg">⚙️</span>
+        +
       </button>
 
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-[60] bg-black/50"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute z-50 w-full mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto">
-            <div className="p-3 border-b border-gray-700">
-              <div className="text-sm font-semibold text-gray-400 mb-1">
-                Select Coins (Max 5)
-              </div>
-              <div className="text-xs text-gray-500">
-                {selectedCoins.length}/5 selected
-              </div>
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] w-[350px] max-h-[500px] bg-[#1a1a1a] border border-gray-700 rounded-xl shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h3 className="text-white font-medium">Select Coins</h3>
+              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white">✕</button>
             </div>
             
-            <div className="p-2">
+            <div className="p-4 max-h-[400px] overflow-y-auto scrollbar-thin">
+              <div className="text-xs text-gray-500 mb-3">
+                {selectedCoins.length}/5 selected (min 1)
+              </div>
+              
               {AVAILABLE_COINS.map((coin) => {
                 const isSelected = selectedCoins.includes(coin.id);
                 const canSelect = selectedCoins.length < 5 || isSelected;
@@ -75,7 +73,7 @@ export const CoinSelector: React.FC<CoinSelectorProps> = ({
                     key={coin.id}
                     onClick={() => !isLastSelected && toggleCoin(coin.id)}
                     disabled={!canSelect && !isSelected}
-                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded mb-2 transition-colors ${
                       isSelected
                         ? 'bg-purple-900/30 text-white'
                         : canSelect

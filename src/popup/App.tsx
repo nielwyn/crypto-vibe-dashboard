@@ -7,7 +7,6 @@ import { NewsTicker } from './components/NewsTicker';
 import { RefreshIndicator } from './components/RefreshIndicator';
 import { Mascot } from './components/Mascot';
 import { Confetti } from './components/Confetti';
-import { StreakCounter } from './components/StreakCounter';
 import { PredictionGame } from './components/PredictionGame';
 import { YieldsSection } from './components/YieldsSection';
 import { useCoins } from '../hooks/useCoins';
@@ -158,35 +157,29 @@ function App() {
   };
 
   return (
-    <div className={`w-[400px] h-[600px] text-white overflow-y-auto transition-all duration-1000 ${getMoodBackground()}`}>
+    <div className={`popup-container transition-all duration-1000 ${getMoodBackground()}`}>
       {/* Confetti overlay */}
       <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
       
-      <div className="p-4 relative">
-        {/* Mascot */}
+      {/* Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 h-12 bg-[#0f0f0f] border-b border-gray-800 z-50 px-4 flex items-center justify-between">
         {!coinsLoading && coins.length > 0 && (
           <Mascot fearGreed={fearGreed} />
         )}
-        
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-            Crypto Vibe Dashboard
-          </h1>
-          <div className="flex items-center gap-2">
-            {lastUpdated && <RefreshIndicator lastUpdated={lastUpdated} />}
-            <button 
-              className="text-gray-400 hover:text-white transition-colors"
-              title="Settings (Coming Soon)"
-            >
-              ⚙️
-            </button>
-          </div>
-        </div>
+        <h1 className="text-lg font-bold text-white">CRYPTO VIBE</h1>
+        <button 
+          className="text-gray-400 hover:text-white transition-colors"
+          title="Settings (Coming Soon)"
+        >
+          ⚙️
+        </button>
+      </header>
 
+      {/* Scrollable Content Area */}
+      <div className="content-area scrollbar-thin">
         {/* Golden Day Celebration */}
         {isGoldenDay && confettiTrigger && (
-          <div className="mb-4 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 text-black font-bold text-center py-3 rounded-lg animate-pulse">
+          <div className="mb-3 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 text-black font-bold text-center py-3 rounded-lg animate-pulse">
             🎉 GOLDEN DAY! All coins +10%! 🎉
           </div>
         )}
@@ -205,35 +198,42 @@ function App() {
           onModeChange={handleModeChange}
         />
 
-        {/* Coin Selector */}
-        <div className="mb-4">
-          <CoinSelector
-            selectedCoins={selectedCoins}
-            onUpdateCoins={updateSelectedCoins}
-          />
-        </div>
-
-        {/* Coin Cards */}
-        <div className="space-y-3 mb-4">
-          {coinsLoading ? (
-            <>
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-gray-900 rounded-lg p-4 animate-pulse">
-                  <div className="h-6 bg-gray-800 rounded w-1/3 mb-2" />
-                  <div className="h-8 bg-gray-800 rounded w-1/2 mb-2" />
-                  <div className="h-10 bg-gray-800 rounded" />
-                </div>
-              ))}
-            </>
-          ) : (
-            coins.map((coin: CoinData) => (
-              <CoinCard
-                key={coin.id}
-                coin={coin}
-                previousPrice={previousPrices[coin.id]}
+        {/* Live Prices Section */}
+        <div className="bg-[#1a1a1a] rounded-xl border border-gray-800 p-3 mb-3">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-white">📊 Live Prices</span>
+            <div className="flex items-center gap-2">
+              {lastUpdated && <RefreshIndicator lastUpdated={lastUpdated} />}
+              <CoinSelector
+                selectedCoins={selectedCoins}
+                onUpdateCoins={updateSelectedCoins}
               />
-            ))
-          )}
+            </div>
+          </div>
+          
+          {/* Horizontal scroll container */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+            {coinsLoading ? (
+              <>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex-shrink-0 w-24 bg-[#242424] rounded-lg p-2 border border-gray-700 animate-pulse">
+                    <div className="h-3 bg-gray-700 rounded mb-1" />
+                    <div className="h-4 bg-gray-700 rounded mb-1" />
+                    <div className="h-8 bg-gray-700 rounded" />
+                  </div>
+                ))}
+              </>
+            ) : (
+              coins.map((coin: CoinData) => (
+                <CoinCard
+                  key={coin.id}
+                  coin={coin}
+                  previousPrice={previousPrices[coin.id]}
+                />
+              ))
+            )}
+          </div>
         </div>
 
         {/* Yields Section */}
@@ -241,20 +241,27 @@ function App() {
 
         {/* News Ticker */}
         {news.length > 0 && <NewsTicker news={news} />}
-
-        {/* Bottom Stats Bar */}
-        {!coinsLoading && coins.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-800">
-            <div className="flex items-center justify-between mb-3">
-              <StreakCounter streak={userStats.streak} />
-            </div>
-            <PredictionGame
-              onPredict={handlePredict}
-              accuracy={calculateAccuracy()}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Fixed Footer */}
+      {!coinsLoading && coins.length > 0 && (
+        <footer className="fixed bottom-0 left-0 right-0 h-12 bg-[#0f0f0f] border-t border-gray-800 px-4 flex items-center justify-between z-50">
+          <div className="flex items-center gap-1">
+            <span className="text-orange-400">🔥</span>
+            <span className="text-sm text-white">{userStats.streak}</span>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <span className="text-blue-400">🎯</span>
+            <span className="text-sm text-white">{calculateAccuracy() || 0}%</span>
+          </div>
+          
+          <PredictionGame
+            onPredict={handlePredict}
+            accuracy={calculateAccuracy()}
+          />
+        </footer>
+      )}
     </div>
   );
 }

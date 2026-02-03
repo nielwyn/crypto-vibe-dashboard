@@ -23,7 +23,7 @@ export const CoinCard: React.FC<CoinCardProps> = ({ coin, previousPrice }) => {
 
   return (
     <div
-      className={`bg-gray-900 rounded-lg p-4 transition-all duration-300 ${
+      className={`flex-shrink-0 w-24 bg-[#242424] rounded-lg p-2 border border-gray-700 transition-all duration-300 ${
         flash === 'up'
           ? 'ring-2 ring-crypto-accent-green'
           : flash === 'down'
@@ -31,40 +31,32 @@ export const CoinCard: React.FC<CoinCardProps> = ({ coin, previousPrice }) => {
           : ''
       }`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-white">{coin.symbol.toUpperCase()}</h3>
-            <span className="text-xs text-gray-500">{coin.name}</span>
-          </div>
-          <div className="text-2xl font-bold text-white mt-1">
-            ${coin.current_price.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </div>
-        </div>
-        
-        <div
-          className={`text-sm font-semibold px-2 py-1 rounded ${
-            isPositive
-              ? 'bg-green-900/30 text-crypto-accent-green'
-              : 'bg-red-900/30 text-crypto-accent-red'
-          }`}
-        >
-          {isPositive ? '▲' : '▼'} {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
-        </div>
+      <div className="flex items-center gap-1 mb-1">
+        <span className="text-xs font-bold text-white">{coin.symbol.toUpperCase()}</span>
       </div>
-
+      <div className="text-xs text-gray-400 mb-1 truncate">
+        ${coin.current_price.toLocaleString(undefined, {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        })}
+      </div>
+      <div
+        className={`text-sm font-medium ${
+          isPositive
+            ? 'text-green-400'
+            : 'text-red-400'
+        }`}
+      >
+        {isPositive ? '+' : ''}{coin.price_change_percentage_24h.toFixed(1)}%
+      </div>
       {sparklineData.length > 0 && (
-        <div className="mt-2">
+        <div className="mt-1">
           <Sparkline
             data={sparklineData}
-            width={280}
-            height={40}
-            color={isPositive ? '#00ff88' : '#ff3366'}
+            width={80}
+            height={20}
+            color={isPositive ? '#22c55e' : '#ef4444'}
           />
-          <div className="text-xs text-gray-500 mt-1">7-day trend</div>
         </div>
       )}
     </div>

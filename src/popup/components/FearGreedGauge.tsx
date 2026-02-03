@@ -51,65 +51,28 @@ export const FearGreedGauge: React.FC<FearGreedGaugeProps> = ({ fearGreed }) => 
   const colors = getStateColor();
 
   return (
-    <div className="bg-gray-900 rounded-lg p-6 mb-4">
-      <h2 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">
-        Fear & Greed Index
-      </h2>
+    <div className="bg-[#1a1a1a] rounded-xl p-4 border border-gray-800 mb-3">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm text-gray-400 uppercase tracking-wider">MARKET MOOD</span>
+        <span className="text-2xl">{colors.emoji}</span>
+      </div>
       
-      <div className="space-y-4">
-        {/* Visual Gauge Bar */}
-        <div className="relative">
-          <div className="h-8 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 rounded-full overflow-hidden">
-            {/* Needle/Indicator */}
-            <div
-              className="absolute top-0 bottom-0 w-1 bg-white shadow-lg transition-all duration-1000 ease-out"
-              style={{
-                left: `${fearGreed.score}%`,
-                transform: 'translateX(-50%)',
-              }}
-            >
-              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
-            </div>
-          </div>
-          
-          {/* Scale markers */}
-          <div className="flex justify-between mt-1 text-xs text-gray-500">
-            <span>0</span>
-            <span>25</span>
-            <span>50</span>
-            <span>75</span>
-            <span>100</span>
-          </div>
-        </div>
-
-        {/* Score and State */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className={`text-3xl font-bold ${colors.text} transition-colors duration-500`}>
-              {fearGreed.score}
-            </div>
-            <div className="text-gray-400 text-sm uppercase tracking-wide">
-              {getStateLabel()} {colors.emoji}
-            </div>
-          </div>
-          
-          {/* Component breakdown */}
-          <div className="text-xs text-gray-400 space-y-1">
-            <div className="flex justify-between gap-4">
-              <span>Volatility:</span>
-              <span className="font-mono">{fearGreed.components.volatility}</span>
-            </div>
-            <div className="flex justify-between gap-4">
-              <span>Momentum:</span>
-              <span className="font-mono">{fearGreed.components.momentum}</span>
-            </div>
-            <div className="flex justify-between gap-4">
-              <span>BTC.D:</span>
-              <span className="font-mono">{fearGreed.components.btcDominance}</span>
-            </div>
-          </div>
-        </div>
+      {/* Gauge bar */}
+      <div className="relative h-4 bg-gray-700 rounded-full overflow-hidden mb-2">
+        <div 
+          className="absolute h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500"
+          style={{ width: '100%' }}
+        />
+        <div 
+          className="absolute h-6 w-1 bg-white top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out"
+          style={{ left: `${fearGreed.score}%` }}
+        />
+      </div>
+      
+      {/* Score and label */}
+      <div className="flex items-center justify-center gap-2">
+        <span className="text-3xl font-bold text-white">{fearGreed.score}</span>
+        <span className={`text-lg font-medium ${colors.text}`}>{getStateLabel().toUpperCase()}</span>
       </div>
     </div>
   );
