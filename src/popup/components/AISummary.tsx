@@ -51,7 +51,7 @@ export const AISummary: React.FC<AISummaryProps> = ({
       </div>
       
       {/* Content - scrollable if too long */}
-      <div className="p-3 max-h-20 overflow-y-auto scrollbar-thin text-sm text-gray-300">
+      <div className="p-3 max-h-32 overflow-y-auto scrollbar-thin text-sm text-gray-300">
         {loading ? (
           <div className="animate-pulse space-y-2">
             <div className="h-3 bg-gray-700 rounded w-full" />
