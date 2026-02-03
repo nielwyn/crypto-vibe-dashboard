@@ -106,23 +106,27 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
       </div>
 
       {/* Carousel Container */}
-      <div className="relative">
-        {/* Navigation Arrows */}
+      <div className="relative group">
+        {/* Navigation Arrows - positioned at edges, only visible on hover */}
         {news.length > 1 && (
           <>
             <button
               onClick={goPrev}
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-gray-800/80 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-all opacity-0 group-hover:opacity-100 hover:opacity-100"
-              style={{ opacity: isHovered ? 1 : 0 }}
+              className="absolute left-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center text-white/60 hover:text-white bg-gradient-to-r from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              aria-label="Previous news"
             >
-              ‹
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
             <button
               onClick={goNext}
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-gray-800/80 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-all"
-              style={{ opacity: isHovered ? 1 : 0 }}
+              className="absolute right-0 top-0 bottom-0 z-10 w-8 flex items-center justify-center text-white/60 hover:text-white bg-gradient-to-l from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              aria-label="Next news"
             >
-              ›
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </>
         )}
