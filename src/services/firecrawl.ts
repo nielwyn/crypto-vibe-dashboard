@@ -45,22 +45,43 @@ function analyzeSentiment(title: string): 'positive' | 'negative' | 'neutral' {
   return 'neutral';
 }
 
-interface FirecrawlLink {
-  text?: string;
-  href?: string;
-}
-
 interface FirecrawlResponse {
   success: boolean;
   data?: {
     markdown?: string;
-    links?: FirecrawlLink[];
+    links?: string[]; // Firecrawl returns links as string array, not objects
     metadata?: {
       title?: string;
       description?: string;
     };
   };
   error?: string;
+}
+
+// Helper to check if URL is a valid article URL (not media file)
+function isValidArticleUrl(url: string): boolean {
+  const lowerUrl = url.toLowerCase();
+  
+  // Reject media/asset URLs
+  const mediaExtensions = ['.avif', '.webp', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.mp4', '.mp3', '.pdf', '.ico', '.woff', '.woff2', '.ttf', '.css', '.js'];
+  if (mediaExtensions.some(ext => lowerUrl.endsWith(ext))) {
+    return false;
+  }
+  
+  // Reject asset paths
+  const assetPaths = ['/images/', '/img/', '/media/', '/cdn-cgi/', '/assets/', '/static/', '/_next/image', '/wp-content/uploads/'];
+  if (assetPaths.some(path => lowerUrl.includes(path))) {
+    return false;
+  }
+  
+  // Must be HTTP(S)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return false;
+  }
+  
+  // Should look like an article URL (contains year or article path)
+  const articleIndicators = ['/news/', '/markets/', '/article/', '/post/', '/202', '/blog/', '/learn/'];
+  return articleIndicators.some(indicator => lowerUrl.includes(indicator));
 }
 
 export const firecrawl = {
@@ -110,7 +131,7 @@ async function scrapeNewsFromSource(
     },
     body: JSON.stringify({
       url: url,
-      formats: ['markdown', 'links'],
+      formats: ['markdown'], // Only use markdown - links format returns strings without titles
       onlyMainContent: true,
       timeout: 30000,
     }),
@@ -127,46 +148,10 @@ async function scrapeNewsFromSource(
     throw new Error(result.error || 'Failed to scrape content');
   }
 
+  // Extract news from markdown (the primary and reliable method)
   const newsItems: NewsItem[] = [];
   
-  // Method 1: Extract from links array (preferred - more structured)
-  if (result.data.links && result.data.links.length > 0) {
-    const articleLinks = result.data.links.filter((link: FirecrawlLink) => {
-      const text = link.text || '';
-      const href = link.href || '';
-      
-      // Filter for actual article links (not navigation, ads, etc.)
-      return (
-        text.length > 20 && // Title should be substantial
-        text.length < 200 && // But not too long
-        !text.toLowerCase().includes('subscribe') &&
-        !text.toLowerCase().includes('sign up') &&
-        !text.toLowerCase().includes('newsletter') &&
-        !text.toLowerCase().includes('cookie') &&
-        href.startsWith('http') &&
-        (href.includes('/news/') || 
-         href.includes('/markets/') || 
-         href.includes('/article/') ||
-         href.includes('/post/') ||
-         href.includes('202')) // Year in URL usually indicates article
-      );
-    });
-
-    for (const link of articleLinks.slice(0, 8)) {
-      if (link.text && link.href) {
-        newsItems.push({
-          title: link.text.trim(),
-          source: sourceName,
-          url: link.href,
-          sentiment: analyzeSentiment(link.text),
-          scrapedAt: Date.now(),
-        });
-      }
-    }
-  }
-
-  // Method 2: Parse from markdown if links method didn't work well
-  if (newsItems.length < 3 && result.data.markdown) {
+  if (result.data.markdown) {
     const headlines = extractHeadlinesFromMarkdown(result.data.markdown, sourceName, url);
     newsItems.push(...headlines);
   }
@@ -180,24 +165,37 @@ async function scrapeNewsFromSource(
 function extractHeadlinesFromMarkdown(
   markdown: string,
   sourceName: string,
-  baseUrl: string
+  _baseUrl: string
 ): NewsItem[] {
   const newsItems: NewsItem[] = [];
   
   // Pattern to match markdown links: [Title](URL)
-  const linkPattern = /\[([^\]]{20,150})\]\((https?:\/\/[^\)]+)\)/g;
+  const linkPattern = /\[([^\]]{20,150})\]\((https?:\/\/[^\)\s]+)\)/g;
   let match;
 
   while ((match = linkPattern.exec(markdown)) !== null) {
     const title = match[1].trim();
-    const url = match[2];
+    const url = match[2].trim();
     
-    // Skip non-article links
+    // Skip non-article URLs (images, assets, etc.)
+    if (!isValidArticleUrl(url)) {
+      continue;
+    }
+    
+    // Skip non-article titles
+    const lowerTitle = title.toLowerCase();
     if (
-      title.toLowerCase().includes('subscribe') ||
-      title.toLowerCase().includes('sign up') ||
-      title.toLowerCase().includes('read more') ||
-      title.toLowerCase().includes('view all') ||
+      lowerTitle.includes('subscribe') ||
+      lowerTitle.includes('sign up') ||
+      lowerTitle.includes('read more') ||
+      lowerTitle.includes('view all') ||
+      lowerTitle.includes('newsletter') ||
+      lowerTitle.includes('cookie') ||
+      lowerTitle.includes('privacy policy') ||
+      lowerTitle.includes('terms of') ||
+      lowerTitle.includes('contact us') ||
+      lowerTitle.includes('about us') ||
+      lowerTitle.startsWith('http') || // URL as title
       title.length < 20
     ) {
       continue;
@@ -207,23 +205,6 @@ function extractHeadlinesFromMarkdown(
       title,
       source: sourceName,
       url,
-      sentiment: analyzeSentiment(title),
-      scrapedAt: Date.now(),
-    });
-  }
-
-  // Also try to extract headlines from markdown headers
-  const headerPattern = /^#{1,3}\s+(.{20,150})$/gm;
-  while ((match = headerPattern.exec(markdown)) !== null) {
-    const title = match[1].trim();
-    
-    // Skip if already added via link
-    if (newsItems.some(item => item.title === title)) continue;
-    
-    newsItems.push({
-      title,
-      source: sourceName,
-      url: baseUrl, // Use base URL if no specific link
       sentiment: analyzeSentiment(title),
       scrapedAt: Date.now(),
     });

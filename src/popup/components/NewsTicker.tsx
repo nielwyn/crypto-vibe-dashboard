@@ -165,15 +165,12 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({ news }) => {
                       {item.title}
                     </h4>
 
-                    {/* Source & Read More */}
+                    {/* Source & External Link Icon */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">{item.source}</span>
-                      <span className="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                        Read more
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
+                      <svg className="w-3.5 h-3.5 text-gray-500 group-hover:text-purple-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
                     </div>
                   </a>
                 </div>
