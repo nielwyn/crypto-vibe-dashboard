@@ -1,28 +1,25 @@
 import React from 'react';
-import { MarketSentiment } from '../../types';
+import { FearGreedData } from '../../types';
 
 interface MascotProps {
-  sentiment: MarketSentiment;
+  fearGreed: FearGreedData;
 }
 
-export const Mascot: React.FC<MascotProps> = ({ sentiment }) => {
+export const Mascot: React.FC<MascotProps> = ({ fearGreed }) => {
   const getMascot = () => {
-    const score = sentiment.score;
+    const score = fearGreed.score;
     
-    if (score > 5) {
-      // Extreme Bullish
+    if (score >= 75) {
+      // Extreme Greed (75-100)
       return { emoji: '🤑', animation: 'animate-bounce', label: 'To the moon!' };
-    } else if (score > 2) {
-      // Bullish
+    } else if (score >= 50) {
+      // Greed (50-74)
       return { emoji: '😎', animation: 'animate-pulse', label: 'Feeling good!' };
-    } else if (score > -2) {
-      // Neutral
-      return { emoji: '😐', animation: '', label: 'Vibing...' };
-    } else if (score > -5) {
-      // Bearish
+    } else if (score >= 25) {
+      // Fear (25-49)
       return { emoji: '😰', animation: 'animate-shake', label: 'Getting nervous' };
     } else {
-      // Extreme Bearish
+      // Extreme Fear (0-24)
       return { emoji: '😱', animation: 'animate-panic', label: 'PANIC!' };
     }
   };

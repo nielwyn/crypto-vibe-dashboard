@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MoodGauge } from './components/MoodGauge';
+import { FearGreedGauge } from './components/FearGreedGauge';
 import { AISummary } from './components/AISummary';
 import { CoinCard } from './components/CoinCard';
 import { CoinSelector } from './components/CoinSelector';
@@ -14,7 +14,7 @@ import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
 import { useYields } from '../hooks/useYields';
-import { calculateMarketSentiment } from '../utils/sentiment';
+import { useFearGreed } from '../hooks/useFearGreed';
 import { CoinData, UserStats } from '../types';
 import { storage } from '../services/storage';
 
@@ -23,6 +23,7 @@ function App() {
   const { analysis, loading: aiLoading, generateAnalysis, loadCachedAnalysis } = useAI();
   const { news } = useNews();
   const { yields, loading: yieldsLoading } = useYields();
+  const { fearGreed } = useFearGreed(coins);
   
   const [previousPrices, setPreviousPrices] = useState<Record<string, number>>({});
   const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
@@ -35,8 +36,6 @@ function App() {
   });
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [isGoldenDay, setIsGoldenDay] = useState(false);
-  
-  const sentiment = calculateMarketSentiment(coins);
 
   // Load AI mode preference
   useEffect(() => {
@@ -91,22 +90,22 @@ function App() {
     checkConfetti();
   }, [coins]);
 
-  // Demo confetti trigger (Ctrl+C)
+  // Demo confetti trigger (Ctrl+Shift+C)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'c') {
+      if (e.ctrlKey && e.shiftKey && e.key === 'C') {
         setIsGoldenDay(true);
         setConfettiTrigger(true);
         setTimeout(() => setConfettiTrigger(false), 4000);
       }
     };
-    window.addEventListener('keypress', handleKeyPress);
-    return () => window.removeEventListener('keypress', handleKeyPress);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
   const handleRefreshAI = () => {
     if (coins.length > 0) {
-      generateAnalysis(coins, aiMode, yields);
+      generateAnalysis(coins, aiMode, yields, fearGreed);
     }
   };
 
@@ -118,7 +117,7 @@ function App() {
     
     // Regenerate analysis with new mode
     if (coins.length > 0) {
-      generateAnalysis(coins, mode, yields);
+      generateAnalysis(coins, mode, yields, fearGreed);
     }
   };
 
@@ -150,9 +149,9 @@ function App() {
 
   // Get mood-based background classes
   const getMoodBackground = () => {
-    if (sentiment.score > 2) {
+    if (fearGreed.score >= 50) {
       return 'bg-gradient-to-b from-crypto-dark via-crypto-dark to-crypto-dark/95 [box-shadow:inset_0_0_80px_rgba(0,255,136,0.1)]';
-    } else if (sentiment.score < -2) {
+    } else if (fearGreed.score < 50) {
       return 'bg-gradient-to-b from-crypto-dark via-crypto-dark to-crypto-dark/95 [box-shadow:inset_0_0_80px_rgba(255,51,102,0.1)]';
     }
     return 'bg-crypto-dark';
@@ -166,7 +165,7 @@ function App() {
       <div className="p-4 relative">
         {/* Mascot */}
         {!coinsLoading && coins.length > 0 && (
-          <Mascot sentiment={sentiment} />
+          <Mascot fearGreed={fearGreed} />
         )}
         
         {/* Header */}
@@ -192,9 +191,9 @@ function App() {
           </div>
         )}
 
-        {/* Market Mood Gauge */}
+        {/* Fear & Greed Index Gauge */}
         {!coinsLoading && coins.length > 0 && (
-          <MoodGauge sentiment={sentiment} />
+          <FearGreedGauge fearGreed={fearGreed} />
         )}
 
         {/* AI Summary */}

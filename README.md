@@ -5,7 +5,7 @@ AI-powered Chrome extension showing real-time crypto market sentiment for Herond
 ## Features
 
 ### Core Features
-- 🎯 **Market Mood Indicator** - Real-time bullish/bearish/neutral gauge based on live crypto prices
+- 🎯 **Fear & Greed Index** - Custom market sentiment indicator (0-100 scale) based on volatility, momentum, and BTC dominance
 - 🤖 **AI Market Summary** - Google Gemini-powered market analysis with streaming text effect
 - 📊 **Live Coin Tracker** - Real-time prices from CoinGecko with auto-refresh every 30 seconds
 - ⚡ **Price Flash Animation** - Visual feedback when prices change (green up, red down)
@@ -132,8 +132,8 @@ Then load the extension from the `dist/` folder as described above. The extensio
 
 1. Click the extension icon in your browser toolbar
 2. The popup displays:
-   - **Animated Mascot** (top-right) reacting to market mood
-   - Market mood gauge (bullish/bearish/neutral)
+   - **Animated Mascot** (top-right) reacting to Fear & Greed score
+   - Fear & Greed Index gauge (0-100 scale with visual indicator)
    - AI-generated market analysis with Pro/Degen mode toggle
    - Live prices for your selected coins
    - 7-day price trend sparklines
@@ -147,7 +147,7 @@ Then load the extension from the `dist/` folder as described above. The extensio
 7. News updates every 5 minutes
 
 ### Easter Eggs & Tips
-- Press `Ctrl+C` to trigger confetti manually (great for demos!)
+- Press `Ctrl+Shift+C` to trigger confetti manually (great for demos!)
 - Your daily streak resets if you miss 24 hours - keep coming back!
 - Try Degen mode for entertaining crypto slang analysis
 - The mascot gets more dramatic as market sentiment intensifies
@@ -204,11 +204,16 @@ crypto-vibe-dashboard/
 
 ## Features Breakdown
 
-### Market Mood Indicator
-- Calculates average 24h price change across selected coins
-- Bullish: avg > 2%
-- Bearish: avg < -2%
-- Neutral: between -2% and 2%
+### Fear & Greed Index
+- Calculates market sentiment using a weighted formula:
+  - Volatility (35%): High volatility = Fear, Low = Greed
+  - Momentum (35%): Positive change = Greed, Negative = Fear
+  - BTC Dominance (30%): High BTC.D = Fear, Low = Greed
+- Score ranges:
+  - 0-24: Extreme Fear 😱
+  - 25-49: Fear 😰
+  - 50-74: Greed 😎
+  - 75-100: Extreme Greed 🤑
 - Animated gauge with smooth transitions
 
 ### AI Market Summary
