@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   USER_STATS: 'userStats',
   CONFETTI_TRIGGERED: 'confettiTriggered',
   YIELDS_CACHE: 'yieldsCache',
+  YIELDS_CACHE_TIMESTAMP: 'yieldsCacheTimestamp',
 };
 
 export const storage = {
@@ -129,6 +130,15 @@ export const storage = {
   },
 
   async setYieldsCache(yields: YieldPool[]): Promise<void> {
-    await chrome.storage.local.set({ [STORAGE_KEYS.YIELDS_CACHE]: yields });
+    await chrome.storage.local.set({ 
+      [STORAGE_KEYS.YIELDS_CACHE]: yields,
+      [STORAGE_KEYS.YIELDS_CACHE_TIMESTAMP]: Date.now(),
+    });
+  },
+
+  async getYieldsCacheTimestamp(): Promise<number> {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.YIELDS_CACHE_TIMESTAMP);
+    const timestamp = result[STORAGE_KEYS.YIELDS_CACHE_TIMESTAMP];
+    return typeof timestamp === 'number' ? timestamp : 0;
   },
 };
