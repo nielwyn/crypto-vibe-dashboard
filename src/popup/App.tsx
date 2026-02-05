@@ -13,6 +13,7 @@ import { PredictionGame } from './components/PredictionGame';
 import { YieldsSection } from './components/YieldsSection';
 import { CryptoSurvivorGame } from './components/CryptoSurvivor/CryptoSurvivorGame';
 import { CardFlip } from './components/CardFlip';
+import { ActionCardsBar } from './components/ActionCardsBar';
 import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
@@ -201,6 +202,7 @@ function App() {
           mode={aiMode}
           onModeChange={handleModeChange}
           onPersonaChange={handlePersonaChange}
+          selectedCoins={coins}
         />
 
         {/* Live Prices Section - Phantom Style */}
@@ -262,6 +264,11 @@ function App() {
         {/* News Ticker */}
         {news.length > 0 && <NewsTicker news={news} />}
       </div>
+
+      {/* Action Cards Bar - Above Footer */}
+      {!coinsLoading && coins.length > 0 && analysis?.actionCards && (
+        <ActionCardsBar cards={analysis.actionCards} />
+      )}
 
       {/* Phantom-style Footer */}
       {!coinsLoading && coins.length > 0 && (

@@ -50,7 +50,15 @@ export const gemini = {
 };
 
 function getPersonaPrompt(coins: CoinData[], yields: YieldPool[], fearGreed: FearGreedData | undefined, persona: any): string {
-  let prompt = persona.promptPrefix + '\n\nAnalyze the current crypto market based on this data:\n';
+  let prompt = persona.promptPrefix + '\n\n';
+  
+  // Make prompt coin-specific
+  prompt += `Analyze these specific coins the user is tracking:\n`;
+  coins.forEach(c => {
+    prompt += `- ${c.name} (${c.symbol.toUpperCase()}): $${c.current_price.toFixed(2)}, 24h change: ${c.price_change_percentage_24h > 0 ? '+' : ''}${c.price_change_percentage_24h.toFixed(2)}%\n`;
+  });
+  
+  prompt += `\nFocus your analysis ONLY on these coins.\n`;
 
   if (fearGreed) {
     prompt += `
@@ -62,16 +70,20 @@ Components:
 `;
   }
 
-  prompt += `
-Price Data:
-${coins.map(c => `${c.name} (${c.symbol.toUpperCase()}): $${c.current_price.toFixed(2)}, 24h change: ${c.price_change_percentage_24h.toFixed(2)}%`).join('\n')}`;
+  // Filter yields to match selected coin ecosystems
+  const coinSymbols = coins.map(c => c.symbol.toLowerCase());
+  const relevantYields = yields.filter(y => {
+    const yieldSymbol = y.symbol.toLowerCase();
+    // Check if yield symbol contains any of the tracked coin symbols
+    return coinSymbols.some(cs => yieldSymbol.includes(cs));
+  });
 
-  if (yields.length > 0) {
-    prompt += `\n\nTop DeFi Yields:
-${yields.map(y => `${y.project} on ${y.chain} (${y.symbol}): ${y.apy.toFixed(2)}% APY, TVL: $${(y.tvlUsd / 1_000_000).toFixed(0)}M`).join('\n')}`;
+  if (relevantYields.length > 0) {
+    prompt += `\nTop DeFi Yields for your tracked coins:
+${relevantYields.slice(0, 3).map(y => `${y.project} on ${y.chain} (${y.symbol}): ${y.apy.toFixed(2)}% APY, TVL: $${(y.tvlUsd / 1_000_000).toFixed(0)}M`).join('\n')}`;
   }
 
-  prompt += `\n\nProvide concise analysis (2-3 paragraphs) in your persona's style.`;
+  prompt += `\n\nProvide concise analysis (2-3 paragraphs) in your persona's style. Focus specifically on the user's tracked coins.`;
 
   return prompt;
 }
@@ -79,8 +91,31 @@ ${yields.map(y => `${y.project} on ${y.chain} (${y.symbol}): ${y.apy.toFixed(2)}
 function generateActionCards(coins: CoinData[], yields: YieldPool[], fearGreed: FearGreedData | undefined, personaId: string): ActionCard[] {
   const cards: ActionCard[] = [];
   
-  // 1. Yield Card - always show if yields exist
-  if (yields.length > 0) {
+  // Filter yields to match selected coin ecosystems
+  const coinSymbols = coins.map(c => c.symbol.toLowerCase());
+  const relevantYields = yields.filter(y => {
+    const yieldSymbol = y.symbol.toLowerCase();
+    // Check if yield symbol contains any of the tracked coin symbols
+    return coinSymbols.some(cs => yieldSymbol.includes(cs));
+  });
+  
+  // 1. Yield Card - prioritize yields matching user's coins
+  if (relevantYields.length > 0) {
+    const topYield = relevantYields[0];
+    const risk = topYield.apy > 20 ? 'medium' : 'low';
+    cards.push({
+      id: 'yield-1',
+      type: 'yield',
+      icon: '💰',
+      title: `${topYield.project} Yield`,
+      description: `${topYield.symbol} on ${topYield.chain}`,
+      risk,
+      metric: 'APY',
+      metricValue: `${topYield.apy.toFixed(2)}%`,
+      confidence: Math.min(95, 70 + (topYield.tvlUsd / 10_000_000))
+    });
+  } else if (yields.length > 0) {
+    // Fallback to any top yield if no matching yields found
     const topYield = yields[0];
     const risk = topYield.apy > 20 ? 'medium' : 'low';
     cards.push({

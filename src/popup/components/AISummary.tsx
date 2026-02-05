@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AIAnalysis } from '../../types';
+import { AIAnalysis, CoinData } from '../../types';
 import { ModeToggle } from './ModeToggle';
 import { PersonaSelector } from './PersonaSelector';
-import { ActionCards } from './ActionCards';
 import { storage } from '../../services/storage';
 
 interface AISummaryProps {
@@ -12,6 +11,7 @@ interface AISummaryProps {
   mode: 'professional' | 'degen';
   onModeChange: (mode: 'professional' | 'degen') => void;
   onPersonaChange?: (personaId: string) => void;
+  selectedCoins?: CoinData[];
 }
 
 export const AISummary: React.FC<AISummaryProps> = ({
@@ -21,10 +21,12 @@ export const AISummary: React.FC<AISummaryProps> = ({
   mode,
   onModeChange,
   onPersonaChange,
+  selectedCoins,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [selectedPersona, setSelectedPersona] = useState('analyst');
+  const [expanded, setExpanded] = useState(false);
 
   // Load persona preference on mount
   useEffect(() => {
@@ -71,7 +73,14 @@ export const AISummary: React.FC<AISummaryProps> = ({
     <div className="phantom-card overflow-hidden mb-3">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-[#3d4470]/50">
-        <span className="text-sm font-medium text-white">🤖 AI Analysis</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-white">🤖 AI Analysis</span>
+          {selectedCoins && selectedCoins.length > 0 && (
+            <span className="text-[10px] text-[#8da4d4]">
+              ({selectedCoins.map(c => c.symbol.toUpperCase()).join(', ')})
+            </span>
+          )}
+        </div>
         <ModeToggle mode={mode} onToggle={onModeChange} />
       </div>
       
@@ -80,24 +89,32 @@ export const AISummary: React.FC<AISummaryProps> = ({
         <PersonaSelector selectedPersona={selectedPersona} onSelect={handlePersonaSelect} />
       </div>
       
-      {/* Content - scrollable if too long */}
-      <div className="p-3 max-h-32 overflow-y-auto scrollbar-thin text-sm text-gray-300">
+      {/* Content - NO internal scroll, truncate with line-clamp */}
+      <div className="p-3">
         {loading ? (
           <div className="animate-pulse space-y-2">
             <div className="h-3 bg-[#3d4470] rounded w-full" />
             <div className="h-3 bg-[#3d4470] rounded w-4/5" />
           </div>
         ) : analysis ? (
-          <>
-            <p className="leading-relaxed">{displayedText}
-              {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
-            </p>
-            {!isTyping && analysis.actionCards && (
-              <ActionCards cards={analysis.actionCards} />
+          <div className="relative">
+            <div className="max-h-[100px] overflow-hidden relative">
+              <p className="text-sm text-gray-300 leading-relaxed line-clamp-4">
+                {displayedText}
+                {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
+              </p>
+            </div>
+            {!isTyping && displayedText.length > 200 && (
+              <button 
+                onClick={() => setExpanded(true)}
+                className="text-xs text-[#ab9ff2] hover:text-[#8da4d4] mt-2 transition-colors"
+              >
+                Read more...
+              </button>
             )}
-          </>
+          </div>
         ) : (
-          <p className="leading-relaxed text-[#8da4d4]/50 italic">Click "Refresh" to generate AI analysis</p>
+          <p className="text-sm text-[#8da4d4]/50 italic leading-relaxed">Click "Refresh" to generate AI analysis</p>
         )}
       </div>
       
@@ -116,6 +133,24 @@ export const AISummary: React.FC<AISummaryProps> = ({
           </span>
         )}
       </div>
+
+      {/* Expanded modal when "Read more" clicked */}
+      {expanded && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0f0f1a] border border-[#3d4470]/50 rounded-lg p-4 max-w-[380px] max-h-[500px] overflow-y-auto scrollbar-thin">
+            <div className="flex justify-between items-center mb-3">
+              <span className="font-medium text-white">AI Analysis</span>
+              <button 
+                onClick={() => setExpanded(false)}
+                className="text-gray-400 hover:text-white transition-colors text-lg"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-sm text-gray-300 whitespace-pre-line leading-relaxed">{displayedText}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
