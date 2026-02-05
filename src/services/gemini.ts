@@ -186,12 +186,6 @@ function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yield
   const avgChange = coins.reduce((sum, c) => sum + c.price_change_percentage_24h, 0) / coins.length;
   const sentiment = avgChange > 2 ? 'bullish' : avgChange < -2 ? 'bearish' : 'neutral';
 
-  const ethCoin = coins.find(c => c.id === 'ethereum');
-  const ethChange = ethCoin ? ethCoin.price_change_percentage_24h : 0;
-
-  const solCoin = coins.find(c => c.id === 'solana');
-  const solChange = solCoin ? solCoin.price_change_percentage_24h : 0;
-
   const topYield = yields.length > 0 ? yields[0] : null;
   
   const fearGreedState = fearGreed ? fearGreed.state.replace('-', ' ').toUpperCase() : 'NEUTRAL';
@@ -204,36 +198,71 @@ function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yield
   // Generate persona-specific summaries
   switch (personaId) {
     case 'analyst':
-      const yieldInfo = topYield
-        ? ` For yield opportunities, ${topYield.project} on ${topYield.chain} is offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} with a TVL of $${(topYield.tvlUsd / 1_000_000).toFixed(0)}M, presenting a solid risk-adjusted return.`
+      // Create a dynamic coin-specific analysis
+      const coinsList = coins.map(c => c.name).join(', ');
+      const topPerformer = coins.reduce((prev, curr) => 
+        curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
+      );
+      const bottomPerformer = coins.reduce((prev, curr) => 
+        curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
+      );
+      
+      // Filter yields to match selected coin ecosystems
+      const coinSymbols = coins.map(c => c.symbol.toLowerCase());
+      const relevantYields = yields.filter(y => {
+        const yieldSymbol = y.symbol.toLowerCase();
+        return coinSymbols.some(cs => yieldSymbol.includes(cs));
+      });
+      const topYieldForCoins = relevantYields.length > 0 ? relevantYields[0] : topYield;
+      
+      const yieldInfo = topYieldForCoins
+        ? ` For yield opportunities on your tracked assets, ${topYieldForCoins.project} on ${topYieldForCoins.chain} is offering ${topYieldForCoins.apy.toFixed(2)}% APY on ${topYieldForCoins.symbol} with a TVL of $${(topYieldForCoins.tvlUsd / 1_000_000).toFixed(0)}M, presenting a solid risk-adjusted return.`
         : '';
-      summary = `The crypto market is showing ${sentiment} sentiment with an average 24-hour change of ${avgChange.toFixed(2)}%. The Fear & Greed Index stands at ${fearGreedScore} (${fearGreedState}), indicating ${fearGreedScore >= 50 ? 'bullish' : 'bearish'} market psychology. Bitcoin continues to lead the market, while Ethereum shows ${ethChange > 0 ? 'positive' : 'negative'} momentum.\n\nAltcoins like Solana are demonstrating ${solChange > 0 ? 'strength' : 'weakness'}, reflecting broader market dynamics.${yieldInfo} Traders should monitor key support and resistance levels as volatility remains elevated.\n\nLooking ahead, market participants are focusing on macro factors and technical indicators. The current price action suggests ${sentiment === 'bullish' ? 'continued upside potential' : sentiment === 'bearish' ? 'consolidation or correction' : 'sideways movement'} in the near term.`;
+      
+      summary = `Based on your tracked coins (${coinsList}), the market is showing ${sentiment} sentiment with an average 24-hour change of ${avgChange.toFixed(2)}%. The Fear & Greed Index stands at ${fearGreedScore} (${fearGreedState}), indicating ${fearGreedScore >= 50 ? 'bullish' : 'bearish'} market psychology.\n\n${topPerformer.name} is leading your portfolio with ${topPerformer.price_change_percentage_24h > 0 ? 'gains of' : 'losses of'} ${topPerformer.price_change_percentage_24h.toFixed(2)}%, while ${bottomPerformer.name} ${bottomPerformer.price_change_percentage_24h > 0 ? 'shows moderate gains' : 'faces downward pressure'} at ${bottomPerformer.price_change_percentage_24h.toFixed(2)}%.${yieldInfo}\n\nLooking ahead, monitor key support and resistance levels on your tracked assets. The current price action suggests ${sentiment === 'bullish' ? 'continued upside potential' : sentiment === 'bearish' ? 'consolidation or correction' : 'sideways movement'} in the near term.`;
       break;
 
     case 'degen':
+      const coinSymbolsList = coins.map(c => c.symbol.toUpperCase()).join(', ');
+      const topCoin = coins.reduce((prev, curr) => 
+        curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
+      );
+      const bottomCoin = coins.reduce((prev, curr) => 
+        curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
+      );
+      
       summary = avgChange > 5
-        ? `🚀🚀🚀 WAGMI frens! Fear & Greed at ${fearGreedScore} (${fearGreedState})! Market is absolutely bullish af with ${avgChange.toFixed(2)}% avg gains! 🤑💎🙌\n\nBTC leading the charge to the moon, ETH showing ${ethChange > 0 ? 'diamond hands energy' : 'some paper hands vibes'}, and SOL ${solChange > 5 ? 'going parabolic! Wen lambo?' : 'doing its thing'}. This is not financial advice but... ape in? 🦍\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`
+        ? `🚀🚀🚀 WAGMI frens! Fear & Greed at ${fearGreedScore} (${fearGreedState})! Your tracked coins (${coinSymbolsList}) are absolutely pumping with ${avgChange.toFixed(2)}% avg gains! 🤑💎🙌\n\n${topCoin.symbol.toUpperCase()} leading the charge with ${topCoin.price_change_percentage_24h > 0 ? '+' : ''}${topCoin.price_change_percentage_24h.toFixed(2)}%! ${topCoin.price_change_percentage_24h > 10 ? 'Wen lambo? 🏎️' : 'Diamond hands energy! 💎'} This is not financial advice but... ape in? 🦍\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`
         : avgChange < -5
-          ? `😱 Market getting REKT harder than a degen's portfolio after 100x leverage! Fear & Greed: ${fearGreedScore} (${fearGreedState})! 📉 Down ${Math.abs(avgChange).toFixed(2)}% - paper hands are panicking!\n\nBTC looking shaky, ETH ${ethChange < -5 ? 'absolutely dumping' : 'holding on barely'}, SOL ${solChange < -5 ? 'in full panic mode' : 'trying to survive'}. This is the part where diamond hands are forged, fren. 💎\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! Stay patient, fren - the next pump is coming! 💪🔥`
-          : `📊 Market doing that classic sideways crab action with ${avgChange.toFixed(2)}% change. Fear & Greed: ${fearGreedScore} (${fearGreedState}). Neither moon nor rekt - we're just vibing! 🦀\n\nBTC consolidating, ETH ${ethChange > 0 ? 'slightly green' : 'slightly red'}, SOL ${solChange > 0 ? 'pumping a bit' : 'dumping a bit'}. Perfect time to DCA and stack sats, ser! 📈\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`;
+          ? `😱 Your bag getting REKT! Fear & Greed: ${fearGreedScore} (${fearGreedState})! 📉 ${coinSymbolsList} down ${Math.abs(avgChange).toFixed(2)}% - paper hands are panicking!\n\n${bottomCoin.symbol.toUpperCase()} ${bottomCoin.price_change_percentage_24h < -10 ? 'absolutely dumping' : 'taking a beating'} at ${bottomCoin.price_change_percentage_24h.toFixed(2)}%. This is the part where diamond hands are forged, fren. 💎\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! Stay patient, fren - the next pump is coming! 💪🔥`
+          : `📊 Your coins (${coinSymbolsList}) doing that classic sideways crab action with ${avgChange.toFixed(2)}% change. Fear & Greed: ${fearGreedScore} (${fearGreedState}). Neither moon nor rekt - we're just vibing! 🦀\n\n${topCoin.symbol.toUpperCase()} ${topCoin.price_change_percentage_24h > 0 ? 'slightly green' : 'slightly red'} at ${topCoin.price_change_percentage_24h.toFixed(2)}%. Perfect time to DCA and stack, ser! 📈\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`;
       break;
 
     case 'gambler':
       const bullProb = Math.min(95, Math.max(5, 50 + avgChange * 5));
       const riskReward = avgChange > 0 ? '1:3.2' : '1:2.5';
-      summary = `Analyzing the odds: Bullish probability sits at ${bullProb.toFixed(0)}%. Fear & Greed Index: ${fearGreedScore} (${fearGreedState}) - ${fearGreedScore >= 60 ? 'the house is hot' : fearGreedScore <= 40 ? 'fear creates value' : 'neutral territory'}. 🎲\n\nMarket movement: ${avgChange.toFixed(2)}% average change. Risk/Reward ratio: ${riskReward}. ETH ${ethChange > 0 ? 'showing strength' : 'showing weakness'} (${ethChange.toFixed(2)}%), SOL ${solChange > 0 ? 'in the green' : 'in the red'} (${solChange.toFixed(2)}%). ${topYield ? `Best yield bet: ${topYield.project} at ${topYield.apy.toFixed(2)}% APY - calculated opportunity. 🃏` : ''}\n\nThe odds ${sentiment === 'bullish' ? 'favor the bulls' : sentiment === 'bearish' ? 'lean bearish' : 'are even'}. Smart money stays prepared. Position sizing is key. 🎰`;
+      const trackedCoins = coins.map(c => `${c.symbol.toUpperCase()} (${c.price_change_percentage_24h > 0 ? '+' : ''}${c.price_change_percentage_24h.toFixed(2)}%)`).join(', ');
+      summary = `Analyzing the odds for your tracked coins: Bullish probability sits at ${bullProb.toFixed(0)}%. Fear & Greed Index: ${fearGreedScore} (${fearGreedState}) - ${fearGreedScore >= 60 ? 'the house is hot' : fearGreedScore <= 40 ? 'fear creates value' : 'neutral territory'}. 🎲\n\nYour portfolio: ${trackedCoins}. Risk/Reward ratio: ${riskReward}. ${topYield ? `Best yield bet: ${topYield.project} at ${topYield.apy.toFixed(2)}% APY - calculated opportunity. 🃏` : ''}\n\nThe odds ${sentiment === 'bullish' ? 'favor the bulls' : sentiment === 'bearish' ? 'lean bearish' : 'are even'}. Smart money stays prepared. Position sizing is key. 🎰`;
       break;
 
     case 'zen':
-      summary = `The market flows like water, showing ${sentiment} energy with ${avgChange.toFixed(2)}% movement. The Fear & Greed Index reflects ${fearGreedScore >= 60 ? 'excessive enthusiasm' : fearGreedScore <= 40 ? 'unnecessary worry' : 'balanced emotion'} at ${fearGreedScore}. 🕊️\n\nBitcoin leads with steady presence. Ethereum ${ethChange > 0 ? 'rises like the morning sun' : 'rests like the evening tide'}, while Solana ${solChange > 0 ? 'climbs the mountain path' : 'descends into the valley'}. ${topYield ? `For those who seek growth, ${topYield.project} offers ${topYield.apy.toFixed(2)}% - a patient harvest. 🌱` : ''}\n\nRemember: Trees do not grow overnight. The wise trader ${sentiment === 'bullish' ? 'rides the wind without rush' : sentiment === 'bearish' ? 'finds opportunity in stillness' : 'observes without forcing'}. Patience rewards the centered mind.`;
+      const zenTop = coins.reduce((prev, curr) => 
+        curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
+      );
+      const zenBottom = coins.reduce((prev, curr) => 
+        curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
+      );
+      summary = `Your watched coins flow like water, showing ${sentiment} energy with ${avgChange.toFixed(2)}% movement. The Fear & Greed Index reflects ${fearGreedScore >= 60 ? 'excessive enthusiasm' : fearGreedScore <= 40 ? 'unnecessary worry' : 'balanced emotion'} at ${fearGreedScore}. 🕊️\n\n${zenTop.name} ${zenTop.price_change_percentage_24h > 0 ? 'rises like the morning sun' : 'rests like the evening tide'}, while ${zenBottom.name} ${zenBottom.price_change_percentage_24h < 0 ? 'descends into the valley' : 'climbs the mountain path'}. ${topYield ? `For those who seek growth, ${topYield.project} offers ${topYield.apy.toFixed(2)}% - a patient harvest. 🌱` : ''}\n\nRemember: Trees do not grow overnight. The wise trader ${sentiment === 'bullish' ? 'rides the wind without rush' : sentiment === 'bearish' ? 'finds opportunity in stillness' : 'observes without forcing'}. Patience rewards the centered mind.`;
       break;
 
     case 'anchor':
-      summary = `BREAKING: Crypto markets ${sentiment.toUpperCase()} with ${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}% average movement across major assets. 📰\n\nTOP STORIES:\n▸ Fear & Greed Index: ${fearGreedScore}/100 (${fearGreedState})\n▸ Bitcoin: Market leader maintains position\n▸ Ethereum: ${ethChange > 0 ? 'UP' : 'DOWN'} ${Math.abs(ethChange).toFixed(2)}% in 24 hours\n▸ Solana: ${solChange > 0 ? 'GAINS' : 'LOSSES'} of ${Math.abs(solChange).toFixed(2)}%${topYield ? `\n▸ DeFi Highlight: ${topYield.project} yields ${topYield.apy.toFixed(2)}% APY` : ''}\n\nMARKET OUTLOOK: Analysts suggest ${sentiment === 'bullish' ? 'continued strength ahead' : sentiment === 'bearish' ? 'caution in near term' : 'consolidation likely'}. Stay tuned for more updates.`;
+      const anchorCoins = coins.map(c => `▸ ${c.name}: ${c.price_change_percentage_24h > 0 ? 'UP' : 'DOWN'} ${Math.abs(c.price_change_percentage_24h).toFixed(2)}% in 24 hours`).join('\n');
+      summary = `BREAKING: Your tracked crypto portfolio ${sentiment.toUpperCase()} with ${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}% average movement. 📰\n\nTOP STORIES:\n▸ Fear & Greed Index: ${fearGreedScore}/100 (${fearGreedState})\n${anchorCoins}${topYield ? `\n▸ DeFi Highlight: ${topYield.project} yields ${topYield.apy.toFixed(2)}% APY` : ''}\n\nMARKET OUTLOOK: Analysts suggest ${sentiment === 'bullish' ? 'continued strength ahead' : sentiment === 'bearish' ? 'caution in near term' : 'consolidation likely'}. Stay tuned for more updates.`;
       break;
 
     case 'pirate':
-      summary = `AHOY CRYPTO SAILORS! ⚓ The market seas be ${sentiment === 'bullish' ? 'FAVORABLE' : sentiment === 'bearish' ? 'ROUGH' : 'CALM'} with ${avgChange > 0 ? '' : 'a '}${Math.abs(avgChange).toFixed(2)}% ${avgChange > 0 ? 'treasure gains' : 'losses on the voyage'}! Fear & Greed compass points to ${fearGreedScore} (${fearGreedState})! 🏴‍☠️\n\nBitcoin be the flagship leading the fleet! Ethereum shows ${ethChange > 0 ? 'mighty cannons firing' : 'some barnacles on the hull'} (${ethChange > 0 ? '+' : ''}${ethChange.toFixed(2)}%), and Solana be ${solChange > 0 ? 'sailing fast' : 'taking on water'} (${solChange > 0 ? '+' : ''}${solChange.toFixed(2)}%)! ${topYield ? `TREASURE SPOTTED at ${topYield.project} - ${topYield.apy.toFixed(2)}% APY booty awaits ye brave souls! 💰` : ''}\n\nThe winds ${sentiment === 'bullish' ? 'blow strong to fortune' : sentiment === 'bearish' ? 'warn of storms ahead' : 'be steady fer now'}! Hoist the sails and may yer wallets overflow with crypto treasure! YARRR! 🦜`;
+      const pirateFleet = coins.map(c => `${c.name} be ${c.price_change_percentage_24h > 0 ? 'sailing fast' : 'taking on water'} (${c.price_change_percentage_24h > 0 ? '+' : ''}${c.price_change_percentage_24h.toFixed(2)}%)`).join(', ');
+      summary = `AHOY CRYPTO SAILORS! ⚓ Yer fleet (${coins.map(c => c.symbol.toUpperCase()).join(', ')}) be ${sentiment === 'bullish' ? 'FAVORABLE' : sentiment === 'bearish' ? 'ROUGH' : 'CALM'} with ${avgChange > 0 ? '' : 'a '}${Math.abs(avgChange).toFixed(2)}% ${avgChange > 0 ? 'treasure gains' : 'losses on the voyage'}! Fear & Greed compass points to ${fearGreedScore} (${fearGreedState})! 🏴‍☠️\n\n${pirateFleet}! ${topYield ? `TREASURE SPOTTED at ${topYield.project} - ${topYield.apy.toFixed(2)}% APY booty awaits ye brave souls! 💰` : ''}\n\nThe winds ${sentiment === 'bullish' ? 'blow strong to fortune' : sentiment === 'bearish' ? 'warn of storms ahead' : 'be steady fer now'}! Hoist the sails and may yer wallets overflow with crypto treasure! YARRR! 🦜`;
       break;
 
     default:
