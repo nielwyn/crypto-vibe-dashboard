@@ -12,6 +12,7 @@ import { Confetti } from './components/Confetti';
 import { PredictionGame } from './components/PredictionGame';
 import { YieldsSection } from './components/YieldsSection';
 import { CryptoSurvivorGame } from './components/CryptoSurvivor/CryptoSurvivorGame';
+import { CardFlip } from './components/CardFlip';
 import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
@@ -152,15 +153,11 @@ function App() {
     return 'popup-container';
   };
 
-  return (
-    <div className={`transition-all duration-1000 ${getMoodBackground()}`}>
+  // Dashboard content (front of card)
+  const dashboardContent = (
+    <div className={`h-full transition-all duration-1000 ${getMoodBackground()}`}>
       {/* Confetti overlay */}
       <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
-      
-      {/* Game Modal */}
-      {showGame && (
-        <CryptoSurvivorGame onClose={() => setShowGame(false)} />
-      )}
       
       {/* Phantom-style Header */}
       <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0f1a]/95 border-b border-[#3d4470]/50 z-50 px-4 flex items-center justify-center backdrop-blur-xl">
@@ -284,6 +281,19 @@ function App() {
         </footer>
       )}
     </div>
+  );
+
+  // Game content (back of card)
+  const gameContent = (
+    <CryptoSurvivorGame onClose={() => setShowGame(false)} embedded={true} />
+  );
+
+  return (
+    <CardFlip
+      isFlipped={showGame}
+      frontContent={dashboardContent}
+      backContent={gameContent}
+    />
   );
 }
 

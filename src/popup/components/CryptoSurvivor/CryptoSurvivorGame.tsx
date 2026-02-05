@@ -7,9 +7,10 @@ import { storage } from '../../../services/storage';
 
 interface CryptoSurvivorGameProps {
   onClose: () => void;
+  embedded?: boolean; // New prop for card flip mode
 }
 
-export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose }) => {
+export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose, embedded = false }) => {
   const [gameState, setGameState] = useState<GameState>({
     status: 'start',
     score: 0,
@@ -116,6 +117,90 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose 
     return messages[Math.floor(Math.random() * messages.length)];
   };
 
+  // If embedded, render without the overlay wrapper
+  if (embedded) {
+    return (
+      <div className="h-full w-full bg-[#0b0f17] flex flex-col">
+        {/* Header with close button */}
+        <div className="flex items-center justify-between p-3 border-b border-gray-800">
+          <h2 className="text-lg font-bold text-[#7ef3c5]">🎮 Crypto Survivor</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+        
+        {/* Game canvas area */}
+        <div 
+          className="flex-1 flex items-center justify-center p-2"
+          onClick={handleToggle}
+        >
+          <div className="relative">
+            <GameCanvas gameState={gameState} width={360} height={480} />
+            
+            {/* Overlays */}
+            {gameState.status === 'start' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                <h2 className="text-2xl font-bold text-[#7ef3c5] mb-2">
+                  💎 CRYPTO SURVIVOR 💎
+                </h2>
+                <p className="text-gray-400 mb-4">Dodge the FUD!</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Click or Space to toggle direction
+                </p>
+                <p className="text-[#7ef3c5] animate-pulse">
+                  Click to Start
+                </p>
+                {gameState.highScore > 0 && (
+                  <p className="text-sm text-gray-500 mt-4">
+                    Best HODL: {gameState.highScore}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {gameState.status === 'playing' && (
+              <div className="absolute top-4 left-4 text-white">
+                <div className="text-xs text-gray-400">HODL TIME</div>
+                <div className="text-2xl font-bold text-[#7ef3c5]">
+                  {gameState.score}
+                </div>
+              </div>
+            )}
+
+            {gameState.status === 'gameover' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-black/70">
+                <h2 className="text-xl font-bold text-[#ff7b7b] mb-2">
+                  {getGameOverMessage()}
+                </h2>
+                <div className="text-3xl font-bold text-white my-4">
+                  {gameState.score}
+                </div>
+                {gameState.score >= gameState.highScore && gameState.score > 0 && (
+                  <p className="text-[#ffdd99] mb-2">🏆 NEW HIGH SCORE!</p>
+                )}
+                <p className="text-sm text-gray-400 mb-4">
+                  Best HODL: {gameState.highScore}
+                </p>
+                <p className="text-[#7ef3c5] animate-pulse">
+                  Click to Retry
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Footer with controls hint */}
+        <div className="p-2 text-center text-xs text-gray-500 border-t border-gray-800">
+          Space / Click = Toggle Direction | ESC = Back
+        </div>
+      </div>
+    );
+  }
+
+  // Original overlay mode for backwards compatibility
   return (
     <div 
       className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center"
