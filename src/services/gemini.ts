@@ -3,6 +3,16 @@ import { AIAnalysis, CoinData, YieldPool, FearGreedData } from '../types';
 import { ActionCard } from '../types/actionCards';
 import { getPersonaById } from './personas';
 
+// Helper function to filter yields matching user's selected coins
+function getRelevantYields(coins: CoinData[], yields: YieldPool[]): YieldPool[] {
+  const coinSymbols = coins.map(c => c.symbol.toLowerCase());
+  return yields.filter(y => {
+    const yieldSymbol = y.symbol.toLowerCase();
+    // Check if yield symbol contains any of the tracked coin symbols
+    return coinSymbols.some(cs => yieldSymbol.includes(cs));
+  });
+}
+
 export const gemini = {
   async generateAnalysis(
     coins: CoinData[], 
@@ -71,12 +81,7 @@ Components:
   }
 
   // Filter yields to match selected coin ecosystems
-  const coinSymbols = coins.map(c => c.symbol.toLowerCase());
-  const relevantYields = yields.filter(y => {
-    const yieldSymbol = y.symbol.toLowerCase();
-    // Check if yield symbol contains any of the tracked coin symbols
-    return coinSymbols.some(cs => yieldSymbol.includes(cs));
-  });
+  const relevantYields = getRelevantYields(coins, yields);
 
   if (relevantYields.length > 0) {
     prompt += `\nTop DeFi Yields for your tracked coins:
@@ -92,12 +97,7 @@ function generateActionCards(coins: CoinData[], yields: YieldPool[], fearGreed: 
   const cards: ActionCard[] = [];
   
   // Filter yields to match selected coin ecosystems
-  const coinSymbols = coins.map(c => c.symbol.toLowerCase());
-  const relevantYields = yields.filter(y => {
-    const yieldSymbol = y.symbol.toLowerCase();
-    // Check if yield symbol contains any of the tracked coin symbols
-    return coinSymbols.some(cs => yieldSymbol.includes(cs));
-  });
+  const relevantYields = getRelevantYields(coins, yields);
   
   // 1. Yield Card - prioritize yields matching user's coins
   if (relevantYields.length > 0) {
@@ -193,26 +193,23 @@ function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yield
 
   const actionCards = generateActionCards(coins, yields, fearGreed, personaId);
 
+  // Common calculations used by multiple personas
+  const topPerformer = coins.reduce((prev, curr) => 
+    curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
+  );
+  const bottomPerformer = coins.reduce((prev, curr) => 
+    curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
+  );
+  const coinsList = coins.map(c => c.name).join(', ');
+  const coinSymbolsList = coins.map(c => c.symbol.toUpperCase()).join(', ');
+
   let summary = '';
 
   // Generate persona-specific summaries
   switch (personaId) {
     case 'analyst':
-      // Create a dynamic coin-specific analysis
-      const coinsList = coins.map(c => c.name).join(', ');
-      const topPerformer = coins.reduce((prev, curr) => 
-        curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
-      );
-      const bottomPerformer = coins.reduce((prev, curr) => 
-        curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
-      );
-      
       // Filter yields to match selected coin ecosystems
-      const coinSymbols = coins.map(c => c.symbol.toLowerCase());
-      const relevantYields = yields.filter(y => {
-        const yieldSymbol = y.symbol.toLowerCase();
-        return coinSymbols.some(cs => yieldSymbol.includes(cs));
-      });
+      const relevantYields = getRelevantYields(coins, yields);
       const topYieldForCoins = relevantYields.length > 0 ? relevantYields[0] : topYield;
       
       const yieldInfo = topYieldForCoins
@@ -223,19 +220,11 @@ function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yield
       break;
 
     case 'degen':
-      const coinSymbolsList = coins.map(c => c.symbol.toUpperCase()).join(', ');
-      const topCoin = coins.reduce((prev, curr) => 
-        curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
-      );
-      const bottomCoin = coins.reduce((prev, curr) => 
-        curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
-      );
-      
       summary = avgChange > 5
-        ? `🚀🚀🚀 WAGMI frens! Fear & Greed at ${fearGreedScore} (${fearGreedState})! Your tracked coins (${coinSymbolsList}) are absolutely pumping with ${avgChange.toFixed(2)}% avg gains! 🤑💎🙌\n\n${topCoin.symbol.toUpperCase()} leading the charge with ${topCoin.price_change_percentage_24h > 0 ? '+' : ''}${topCoin.price_change_percentage_24h.toFixed(2)}%! ${topCoin.price_change_percentage_24h > 10 ? 'Wen lambo? 🏎️' : 'Diamond hands energy! 💎'} This is not financial advice but... ape in? 🦍\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`
+        ? `🚀🚀🚀 WAGMI frens! Fear & Greed at ${fearGreedScore} (${fearGreedState})! Your tracked coins (${coinSymbolsList}) are absolutely pumping with ${avgChange.toFixed(2)}% avg gains! 🤑💎🙌\n\n${topPerformer.symbol.toUpperCase()} leading the charge with ${topPerformer.price_change_percentage_24h > 0 ? '+' : ''}${topPerformer.price_change_percentage_24h.toFixed(2)}%! ${topPerformer.price_change_percentage_24h > 10 ? 'Wen lambo? 🏎️' : 'Diamond hands energy! 💎'} This is not financial advice but... ape in? 🦍\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`
         : avgChange < -5
-          ? `😱 Your bag getting REKT! Fear & Greed: ${fearGreedScore} (${fearGreedState})! 📉 ${coinSymbolsList} down ${Math.abs(avgChange).toFixed(2)}% - paper hands are panicking!\n\n${bottomCoin.symbol.toUpperCase()} ${bottomCoin.price_change_percentage_24h < -10 ? 'absolutely dumping' : 'taking a beating'} at ${bottomCoin.price_change_percentage_24h.toFixed(2)}%. This is the part where diamond hands are forged, fren. 💎\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! Stay patient, fren - the next pump is coming! 💪🔥`
-          : `📊 Your coins (${coinSymbolsList}) doing that classic sideways crab action with ${avgChange.toFixed(2)}% change. Fear & Greed: ${fearGreedScore} (${fearGreedState}). Neither moon nor rekt - we're just vibing! 🦀\n\n${topCoin.symbol.toUpperCase()} ${topCoin.price_change_percentage_24h > 0 ? 'slightly green' : 'slightly red'} at ${topCoin.price_change_percentage_24h.toFixed(2)}%. Perfect time to DCA and stack, ser! 📈\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`;
+          ? `😱 Your bag getting REKT! Fear & Greed: ${fearGreedScore} (${fearGreedState})! 📉 ${coinSymbolsList} down ${Math.abs(avgChange).toFixed(2)}% - paper hands are panicking!\n\n${bottomPerformer.symbol.toUpperCase()} ${bottomPerformer.price_change_percentage_24h < -10 ? 'absolutely dumping' : 'taking a beating'} at ${bottomPerformer.price_change_percentage_24h.toFixed(2)}%. This is the part where diamond hands are forged, fren. 💎\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! Stay patient, fren - the next pump is coming! 💪🔥`
+          : `📊 Your coins (${coinSymbolsList}) doing that classic sideways crab action with ${avgChange.toFixed(2)}% change. Fear & Greed: ${fearGreedScore} (${fearGreedState}). Neither moon nor rekt - we're just vibing! 🦀\n\n${topPerformer.symbol.toUpperCase()} ${topPerformer.price_change_percentage_24h > 0 ? 'slightly green' : 'slightly red'} at ${topPerformer.price_change_percentage_24h.toFixed(2)}%. Perfect time to DCA and stack, ser! 📈\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰 NFA but... might wanna check that out! ` : ''}WAGMI mindset activated! ${topYield ? 'Stack those yields!' : 'Stay patient, fren - the next pump is coming!'} 💪🔥`;
       break;
 
     case 'gambler':
@@ -246,13 +235,7 @@ function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yield
       break;
 
     case 'zen':
-      const zenTop = coins.reduce((prev, curr) => 
-        curr.price_change_percentage_24h > prev.price_change_percentage_24h ? curr : prev
-      );
-      const zenBottom = coins.reduce((prev, curr) => 
-        curr.price_change_percentage_24h < prev.price_change_percentage_24h ? curr : prev
-      );
-      summary = `Your watched coins flow like water, showing ${sentiment} energy with ${avgChange.toFixed(2)}% movement. The Fear & Greed Index reflects ${fearGreedScore >= 60 ? 'excessive enthusiasm' : fearGreedScore <= 40 ? 'unnecessary worry' : 'balanced emotion'} at ${fearGreedScore}. 🕊️\n\n${zenTop.name} ${zenTop.price_change_percentage_24h > 0 ? 'rises like the morning sun' : 'rests like the evening tide'}, while ${zenBottom.name} ${zenBottom.price_change_percentage_24h < 0 ? 'descends into the valley' : 'climbs the mountain path'}. ${topYield ? `For those who seek growth, ${topYield.project} offers ${topYield.apy.toFixed(2)}% - a patient harvest. 🌱` : ''}\n\nRemember: Trees do not grow overnight. The wise trader ${sentiment === 'bullish' ? 'rides the wind without rush' : sentiment === 'bearish' ? 'finds opportunity in stillness' : 'observes without forcing'}. Patience rewards the centered mind.`;
+      summary = `Your watched coins flow like water, showing ${sentiment} energy with ${avgChange.toFixed(2)}% movement. The Fear & Greed Index reflects ${fearGreedScore >= 60 ? 'excessive enthusiasm' : fearGreedScore <= 40 ? 'unnecessary worry' : 'balanced emotion'} at ${fearGreedScore}. 🕊️\n\n${topPerformer.name} ${topPerformer.price_change_percentage_24h > 0 ? 'rises like the morning sun' : 'rests like the evening tide'}, while ${bottomPerformer.name} ${bottomPerformer.price_change_percentage_24h < 0 ? 'descends into the valley' : 'climbs the mountain path'}. ${topYield ? `For those who seek growth, ${topYield.project} offers ${topYield.apy.toFixed(2)}% - a patient harvest. 🌱` : ''}\n\nRemember: Trees do not grow overnight. The wise trader ${sentiment === 'bullish' ? 'rides the wind without rush' : sentiment === 'bearish' ? 'finds opportunity in stillness' : 'observes without forcing'}. Patience rewards the centered mind.`;
       break;
 
     case 'anchor':

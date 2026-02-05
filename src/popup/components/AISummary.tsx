@@ -4,6 +4,9 @@ import { ModeToggle } from './ModeToggle';
 import { PersonaSelector } from './PersonaSelector';
 import { storage } from '../../services/storage';
 
+// Minimum text length to show "Read more" button
+const MIN_TEXT_LENGTH_FOR_EXPANSION = 200;
+
 interface AISummaryProps {
   analysis: AIAnalysis | null;
   loading: boolean;
@@ -104,7 +107,7 @@ export const AISummary: React.FC<AISummaryProps> = ({
                 {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
               </p>
             </div>
-            {!isTyping && displayedText.length > 200 && (
+            {!isTyping && displayedText.length > MIN_TEXT_LENGTH_FOR_EXPANSION && (
               <button 
                 onClick={() => setExpanded(true)}
                 className="text-xs text-[#ab9ff2] hover:text-[#8da4d4] mt-2 transition-colors"
