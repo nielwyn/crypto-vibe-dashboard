@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   CONFETTI_TRIGGERED: 'confettiTriggered',
   YIELDS_CACHE: 'yieldsCache',
   YIELDS_CACHE_TIMESTAMP: 'yieldsCacheTimestamp',
+  GAME_HIGH_SCORE: 'gameHighScore',
 };
 
 export const storage = {
@@ -150,5 +151,15 @@ export const storage = {
     const result = await chrome.storage.local.get(STORAGE_KEYS.YIELDS_CACHE_TIMESTAMP);
     const timestamp = result[STORAGE_KEYS.YIELDS_CACHE_TIMESTAMP];
     return typeof timestamp === 'number' ? timestamp : 0;
+  },
+
+  async getGameHighScore(): Promise<number> {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.GAME_HIGH_SCORE);
+    const score = result[STORAGE_KEYS.GAME_HIGH_SCORE];
+    return typeof score === 'number' ? score : 0;
+  },
+
+  async setGameHighScore(score: number): Promise<void> {
+    await chrome.storage.local.set({ [STORAGE_KEYS.GAME_HIGH_SCORE]: score });
   },
 };
