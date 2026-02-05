@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AIAnalysis } from '../../types';
 import { ModeToggle } from './ModeToggle';
+import { PersonaSelector } from './PersonaSelector';
+import { ActionCards } from './ActionCards';
+import { storage } from '../../services/storage';
 
 interface AISummaryProps {
   analysis: AIAnalysis | null;
@@ -8,6 +11,7 @@ interface AISummaryProps {
   onRefresh: () => void;
   mode: 'professional' | 'degen';
   onModeChange: (mode: 'professional' | 'degen') => void;
+  onPersonaChange?: (personaId: string) => void;
 }
 
 export const AISummary: React.FC<AISummaryProps> = ({
@@ -16,9 +20,30 @@ export const AISummary: React.FC<AISummaryProps> = ({
   onRefresh,
   mode,
   onModeChange,
+  onPersonaChange,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedPersona, setSelectedPersona] = useState('analyst');
+
+  // Load persona preference on mount
+  useEffect(() => {
+    storage.getPreferences().then(prefs => {
+      if (prefs.aiPersona) {
+        setSelectedPersona(prefs.aiPersona);
+      }
+    });
+  }, []);
+
+  // Handle persona selection
+  const handlePersonaSelect = async (personaId: string) => {
+    setSelectedPersona(personaId);
+    const prefs = await storage.getPreferences();
+    await storage.setPreferences({ ...prefs, aiPersona: personaId });
+    if (onPersonaChange) {
+      onPersonaChange(personaId);
+    }
+  };
 
   useEffect(() => {
     if (analysis && analysis.summary) {
@@ -50,6 +75,11 @@ export const AISummary: React.FC<AISummaryProps> = ({
         <ModeToggle mode={mode} onToggle={onModeChange} />
       </div>
       
+      {/* Persona Selector */}
+      <div className="px-3 pt-3">
+        <PersonaSelector selectedPersona={selectedPersona} onSelect={handlePersonaSelect} />
+      </div>
+      
       {/* Content - scrollable if too long */}
       <div className="p-3 max-h-32 overflow-y-auto scrollbar-thin text-sm text-gray-300">
         {loading ? (
@@ -58,9 +88,14 @@ export const AISummary: React.FC<AISummaryProps> = ({
             <div className="h-3 bg-[#3d4470] rounded w-4/5" />
           </div>
         ) : analysis ? (
-          <p className="leading-relaxed">{displayedText}
-            {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
-          </p>
+          <>
+            <p className="leading-relaxed">{displayedText}
+              {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
+            </p>
+            {!isTyping && analysis.actionCards && (
+              <ActionCards cards={analysis.actionCards} />
+            )}
+          </>
         ) : (
           <p className="leading-relaxed text-[#8da4d4]/50 italic">Click "Refresh" to generate AI analysis</p>
         )}

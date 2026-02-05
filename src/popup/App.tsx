@@ -29,6 +29,7 @@ function App() {
   const { fearGreed } = useFearGreed(coins);
   
   const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
+  const [selectedPersona, setSelectedPersona] = useState<string>('analyst');
   const [chartTimeframe, setChartTimeframe] = useState<ChartTimeframe>('7d');
   const [userStats, setUserStats] = useState<UserStats>({
     streak: 0,
@@ -47,6 +48,7 @@ function App() {
     const loadPreferences = async () => {
       const prefs = await storage.getPreferences();
       setAiMode(prefs.aiMode);
+      setSelectedPersona(prefs.aiPersona || 'analyst');
     };
     loadPreferences();
   }, []);
@@ -101,7 +103,7 @@ function App() {
 
   const handleRefreshAI = () => {
     if (coins.length > 0) {
-      generateAnalysis(coins, aiMode, yields, fearGreed);
+      generateAnalysis(coins, aiMode, yields, fearGreed, selectedPersona);
     }
   };
 
@@ -113,7 +115,15 @@ function App() {
     
     // Regenerate analysis with new mode
     if (coins.length > 0) {
-      generateAnalysis(coins, mode, yields, fearGreed);
+      generateAnalysis(coins, mode, yields, fearGreed, selectedPersona);
+    }
+  };
+
+  const handlePersonaChange = (personaId: string) => {
+    setSelectedPersona(personaId);
+    // Regenerate analysis with new persona
+    if (coins.length > 0) {
+      generateAnalysis(coins, aiMode, yields, fearGreed, personaId);
     }
   };
 
@@ -190,6 +200,7 @@ function App() {
           onRefresh={handleRefreshAI}
           mode={aiMode}
           onModeChange={handleModeChange}
+          onPersonaChange={handlePersonaChange}
         />
 
         {/* Live Prices Section - Phantom Style */}

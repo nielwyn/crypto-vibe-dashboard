@@ -23,6 +23,7 @@ export const storage = {
         refreshInterval: prefs.refreshInterval || 30,
         aiMode: prefs.aiMode || 'professional',
         soundEnabled: prefs.soundEnabled !== undefined ? prefs.soundEnabled : true,
+        aiPersona: prefs.aiPersona || 'analyst',
       };
     }
     return {
@@ -30,6 +31,7 @@ export const storage = {
       refreshInterval: 30,
       aiMode: 'professional',
       soundEnabled: true,
+      aiPersona: 'analyst',
     };
   },
 
