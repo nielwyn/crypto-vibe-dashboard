@@ -11,7 +11,7 @@ export function YieldCard({ pool }: YieldCardProps) {
 
   const getApyColor = (apy: number) => {
     if (apy > 5) return 'text-[#14f195]';
-    if (apy >= 2) return 'text-[#ab9ff2]';
+    if (apy >= 2) return 'text-[#5a7cc0]';
     return 'text-gray-400';
   };
 
@@ -30,14 +30,14 @@ export function YieldCard({ pool }: YieldCardProps) {
   return (
     <>
       <div 
-        className="flex-shrink-0 w-20 bg-[#1a1a3e]/60 backdrop-blur-sm rounded-xl p-2 border border-[#2a2a4a]/50 text-center hover:bg-[#1a1a3e] hover:border-[#9945ff]/30 transition-all duration-200"
+        className="flex-shrink-0 w-20 bg-[#1e2040]/70 backdrop-blur-sm rounded-xl p-2 border border-[#3d4470]/50 text-center hover:bg-[#2a2d50] hover:border-[#5a7cc0]/40 transition-all duration-200"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <div className="text-xs text-white/90 truncate font-medium">
           {pool.project}
         </div>
-        <div className="text-xs text-[#ab9ff2]/60 truncate">
+        <div className="text-xs text-[#8da4d4]/60 truncate">
           {pool.chain}
         </div>
         <div className={`text-sm font-bold mt-1 ${getApyColor(pool.apy)}`}>
@@ -46,7 +46,7 @@ export function YieldCard({ pool }: YieldCardProps) {
       </div>
       {tooltip && createPortal(
         <div 
-          className="fixed z-[100] px-2 py-1 bg-[#1a1a3e] border border-[#2a2a4a] rounded-lg text-xs text-white whitespace-nowrap pointer-events-none shadow-lg"
+          className="fixed z-[100] px-2 py-1 bg-[#1e2040] border border-[#3d4470] rounded-lg text-xs text-white whitespace-nowrap pointer-events-none shadow-lg"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -54,7 +54,7 @@ export function YieldCard({ pool }: YieldCardProps) {
           }}
         >
           <div className="font-medium">{pool.project}</div>
-          <div className="text-[#ab9ff2]/60">{pool.chain}</div>
+          <div className="text-[#8da4d4]/60">{pool.chain}</div>
         </div>,
         document.body
       )}

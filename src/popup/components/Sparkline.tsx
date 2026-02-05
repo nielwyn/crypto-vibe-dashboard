@@ -55,7 +55,7 @@ export const Sparkline: React.FC<SparklineProps> = ({
     return (
       <div 
         style={{ width, height }} 
-        className="flex items-center justify-center text-[#ab9ff2]/40 text-xs"
+        className="flex items-center justify-center text-[#8da4d4]/40 text-xs"
       >
         No data
       </div>

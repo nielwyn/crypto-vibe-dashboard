@@ -45,7 +45,7 @@ export const AISummary: React.FC<AISummaryProps> = ({
   return (
     <div className="phantom-card overflow-hidden mb-3">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-[#2a2a4a]/50">
+      <div className="flex items-center justify-between p-3 border-b border-[#3d4470]/50">
         <span className="text-sm font-medium text-white">🤖 AI Analysis</span>
         <ModeToggle mode={mode} onToggle={onModeChange} />
       </div>
@@ -54,29 +54,29 @@ export const AISummary: React.FC<AISummaryProps> = ({
       <div className="p-3 max-h-32 overflow-y-auto scrollbar-thin text-sm text-gray-300">
         {loading ? (
           <div className="animate-pulse space-y-2">
-            <div className="h-3 bg-[#2a2a4a] rounded w-full" />
-            <div className="h-3 bg-[#2a2a4a] rounded w-4/5" />
+            <div className="h-3 bg-[#3d4470] rounded w-full" />
+            <div className="h-3 bg-[#3d4470] rounded w-4/5" />
           </div>
         ) : analysis ? (
           <p className="leading-relaxed">{displayedText}
-            {isTyping && <span className="animate-pulse text-[#ab9ff2]">|</span>}
+            {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
           </p>
         ) : (
-          <p className="leading-relaxed text-[#ab9ff2]/50 italic">Click "Refresh" to generate AI analysis</p>
+          <p className="leading-relaxed text-[#8da4d4]/50 italic">Click "Refresh" to generate AI analysis</p>
         )}
       </div>
       
       {/* Footer */}
-      <div className="flex items-center justify-between p-3 border-t border-[#2a2a4a]/50 bg-[#0c0c1d]/50">
+      <div className="flex items-center justify-between p-3 border-t border-[#3d4470]/50 bg-[#0f0f1a]/50">
         <button 
           onClick={onRefresh}
           disabled={loading || isTyping}
-          className="flex items-center gap-1 text-xs text-[#ab9ff2] hover:text-[#9945ff] disabled:text-gray-600 transition-colors"
+          className="flex items-center gap-1 text-xs text-[#8da4d4] hover:text-[#5a7cc0] disabled:text-gray-600 transition-colors"
         >
           🔄 Refresh
         </button>
         {analysis && !loading && !isTyping && (
-          <span className="text-xs text-[#ab9ff2]/50">
+          <span className="text-xs text-[#8da4d4]/50">
             ⏱️ {new Date(analysis.generatedAt).toLocaleTimeString()}
           </span>
         )}

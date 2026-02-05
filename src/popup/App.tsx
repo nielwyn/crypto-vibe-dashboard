@@ -156,7 +156,7 @@ function App() {
       <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
       
       {/* Phantom-style Header */}
-      <header className="fixed top-0 left-0 right-0 h-14 bg-gradient-to-r from-[#0c0c1d] via-[#13132b] to-[#0c0c1d] border-b border-[#2a2a4a]/50 z-50 px-4 flex items-center justify-center backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0f1a]/95 border-b border-[#3d4470]/50 z-50 px-4 flex items-center justify-center backdrop-blur-xl">
         <h1 className="text-lg font-bold phantom-gradient-text tracking-wide">CRYPTO VIBE</h1>
         {!coinsLoading && coins.length > 0 && (
           <div className="absolute left-4">
@@ -169,7 +169,7 @@ function App() {
       <div className="content-area scrollbar-thin">
         {/* Golden Day Celebration */}
         {isGoldenDay && confettiTrigger && (
-          <div className="mb-4 bg-gradient-to-r from-[#9945ff] via-[#14f195] to-[#9945ff] text-white font-bold text-center py-3 rounded-2xl animate-pulse phantom-glow">
+          <div className="mb-4 bg-gradient-to-r from-[#4a6caa] via-[#14f195] to-[#4a6caa] text-white font-bold text-center py-3 rounded-2xl animate-pulse phantom-glow">
             🎉 GOLDEN DAY! All coins +10%! 🎉
           </div>
         )}
@@ -235,7 +235,7 @@ function App() {
           </div>
           
           {/* Timeframe label */}
-          <div className="mt-3 flex items-center justify-between text-xs text-[#ab9ff2]/60">
+          <div className="mt-3 flex items-center justify-between text-xs text-[#8da4d4]/60">
             <span>{chartTimeframe === '24h' ? 'Last 24 hours' : 'Last 7 days'}</span>
             {coins.length > 0 && <span>{coins.length} coin{coins.length !== 1 ? 's' : ''}</span>}
           </div>
@@ -250,9 +250,9 @@ function App() {
 
       {/* Phantom-style Footer */}
       {!coinsLoading && coins.length > 0 && (
-        <footer className="fixed bottom-0 left-0 right-0 h-14 bg-gradient-to-r from-[#0c0c1d] via-[#13132b] to-[#0c0c1d] border-t border-[#2a2a4a]/50 px-4 flex items-center justify-between z-50 backdrop-blur-xl">
-          <div className="flex items-center gap-2 bg-[#1a1a3e]/50 px-3 py-1.5 rounded-full">
-            <span className="text-orange-400 text-sm">🔥</span>
+        <footer className="fixed bottom-0 left-0 right-0 h-14 bg-[#0f0f1a]/95 border-t border-[#3d4470]/50 px-4 flex items-center justify-between z-50 backdrop-blur-xl">
+          <div className="flex items-center gap-2 bg-[#1e2040]/60 px-3 py-1.5 rounded-full border border-[#3d4470]/50">
+            <span className="text-[#e85a7b] text-sm">🔥</span>
             <span className="text-sm font-semibold text-white">{userStats.streak}</span>
           </div>
           
@@ -261,8 +261,8 @@ function App() {
             accuracy={calculateAccuracy()}
           />
           
-          <div className="flex items-center gap-2 bg-[#1a1a3e]/50 px-3 py-1.5 rounded-full">
-            <span className="text-[#ab9ff2] text-sm">🎯</span>
+          <div className="flex items-center gap-2 bg-[#1e2040]/60 px-3 py-1.5 rounded-full border border-[#3d4470]/50">
+            <span className="text-[#5a7cc0] text-sm">🎯</span>
             <span className="text-sm font-semibold text-white">{calculateAccuracy() || 0}%</span>
           </div>
         </footer>

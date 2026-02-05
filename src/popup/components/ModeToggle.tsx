@@ -12,8 +12,8 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ mode, onToggle }) => {
         onClick={() => onToggle('professional')}
         className={`px-3 py-1 text-xs font-medium rounded-l-lg transition-all duration-200 ${
           mode === 'professional'
-            ? 'bg-gradient-to-r from-[#9945ff] to-[#7a37d6] text-white shadow-[0_0_10px_rgba(153,69,255,0.3)]'
-            : 'bg-[#1a1a3e]/60 text-[#ab9ff2]/60 hover:bg-[#1a1a3e] hover:text-[#ab9ff2]'
+            ? 'bg-gradient-to-r from-[#4a6caa] to-[#5a7cc0] text-white shadow-[0_0_10px_rgba(74,108,170,0.3)]'
+            : 'bg-[#1e2040]/60 text-[#8da4d4]/60 hover:bg-[#1e2040] hover:text-[#8da4d4]'
         }`}
       >
         🤓 Pro
@@ -22,8 +22,8 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ mode, onToggle }) => {
         onClick={() => onToggle('degen')}
         className={`px-3 py-1 text-xs font-medium rounded-r-lg transition-all duration-200 ${
           mode === 'degen'
-            ? 'bg-gradient-to-r from-[#9945ff] to-[#7a37d6] text-white shadow-[0_0_10px_rgba(153,69,255,0.3)]'
-            : 'bg-[#1a1a3e]/60 text-[#ab9ff2]/60 hover:bg-[#1a1a3e] hover:text-[#ab9ff2]'
+            ? 'bg-gradient-to-r from-[#4a6caa] to-[#5a7cc0] text-white shadow-[0_0_10px_rgba(74,108,170,0.3)]'
+            : 'bg-[#1e2040]/60 text-[#8da4d4]/60 hover:bg-[#1e2040] hover:text-[#8da4d4]'
         }`}
       >
         🚀 Degen

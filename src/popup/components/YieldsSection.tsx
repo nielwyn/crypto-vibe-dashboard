@@ -26,10 +26,10 @@ export function YieldsSection({ yields, loading }: YieldsSectionProps) {
       {loading ? (
         <div ref={loadingScrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex-shrink-0 w-20 bg-[#1a1a3e]/60 backdrop-blur-sm rounded-xl p-2 animate-pulse border border-[#2a2a4a]/50">
-              <div className="h-3 bg-[#2a2a4a] rounded mb-1" />
-              <div className="h-2 bg-[#2a2a4a] rounded mb-1" />
-              <div className="h-4 bg-[#2a2a4a] rounded" />
+            <div key={i} className="flex-shrink-0 w-20 bg-[#1e2040]/70 backdrop-blur-sm rounded-xl p-2 animate-pulse border border-[#3d4470]/50">
+              <div className="h-3 bg-[#3d4470] rounded mb-1" />
+              <div className="h-2 bg-[#3d4470] rounded mb-1" />
+              <div className="h-4 bg-[#3d4470] rounded" />
             </div>
           ))}
         </div>
@@ -40,7 +40,7 @@ export function YieldsSection({ yields, loading }: YieldsSectionProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center text-[#ab9ff2]/60 text-sm py-4">
+        <div className="text-center text-[#8da4d4]/60 text-sm py-4">
           No yield data available
         </div>
       )}
