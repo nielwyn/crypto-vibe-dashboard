@@ -29,6 +29,8 @@ export interface AIAnalysis {
   summary: string;
   generatedAt: number;
   basedOn: object;
+  actionCards?: import('./actionCards').ActionCard[];
+  persona?: string;
 }
 
 export interface NewsItem {
@@ -44,6 +46,7 @@ export interface UserPreferences {
   refreshInterval: number;
   aiMode: 'professional' | 'degen';
   soundEnabled: boolean;
+  aiPersona?: string;
 }
 
 export interface UserStats {
