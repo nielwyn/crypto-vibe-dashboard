@@ -11,6 +11,7 @@ import { Mascot } from './components/Mascot';
 import { Confetti } from './components/Confetti';
 import { PredictionGame } from './components/PredictionGame';
 import { YieldsSection } from './components/YieldsSection';
+import { CryptoSurvivorGame } from './components/CryptoSurvivor/CryptoSurvivorGame';
 import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
@@ -37,6 +38,7 @@ function App() {
   });
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [isGoldenDay, setIsGoldenDay] = useState(false);
+  const [showGame, setShowGame] = useState(false);
   const coinScrollRef = useDragScroll<HTMLDivElement>();
 
   // Load AI mode preference
@@ -155,6 +157,11 @@ function App() {
       {/* Confetti overlay */}
       <Confetti trigger={confettiTrigger} isGoldenDay={isGoldenDay} />
       
+      {/* Game Modal */}
+      {showGame && (
+        <CryptoSurvivorGame onClose={() => setShowGame(false)} />
+      )}
+      
       {/* Phantom-style Header */}
       <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0f1a]/95 border-b border-[#3d4470]/50 z-50 px-4 flex items-center justify-center backdrop-blur-xl">
         <h1 className="text-lg font-bold phantom-gradient-text tracking-wide">CRYPTO VIBE</h1>
@@ -261,9 +268,18 @@ function App() {
             accuracy={calculateAccuracy()}
           />
           
-          <div className="flex items-center gap-2 bg-[#1e2040]/60 px-3 py-1.5 rounded-full border border-[#3d4470]/50">
-            <span className="text-[#5a7cc0] text-sm">🎯</span>
-            <span className="text-sm font-semibold text-white">{calculateAccuracy() || 0}%</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowGame(true)}
+              className="text-gray-500 hover:text-[#7ef3c5] transition-colors text-lg"
+              title="Play Crypto Survivor!"
+            >
+              🎮
+            </button>
+            <div className="flex items-center gap-2 bg-[#1e2040]/60 px-3 py-1.5 rounded-full border border-[#3d4470]/50">
+              <span className="text-[#5a7cc0] text-sm">🎯</span>
+              <span className="text-sm font-semibold text-white">{calculateAccuracy() || 0}%</span>
+            </div>
           </div>
         </footer>
       )}
