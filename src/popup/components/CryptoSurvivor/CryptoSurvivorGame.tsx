@@ -117,28 +117,26 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
     return messages[Math.floor(Math.random() * messages.length)];
   };
 
-  // If embedded, render without the overlay wrapper
+  // If embedded, render as full-page like the dashboard
   if (embedded) {
     return (
-      <div className="h-full w-full bg-[#0b0f17] flex flex-col">
-        {/* Header with close button */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-800">
-          <h2 className="text-lg font-bold text-[#7ef3c5]">🎮 Crypto Survivor</h2>
+      <div className="popup-container" style={{ background: 'linear-gradient(180deg, #0b0f17 0%, #0f1923 50%, #0b0f17 100%)' }}>
+        {/* Header - matches dashboard header style */}
+        <header className="fixed top-0 left-0 right-0 h-14 bg-[#0b0f17]/95 border-b border-[#7ef3c5]/20 z-50 px-4 flex items-center justify-between backdrop-blur-xl">
+          <h1 className="text-lg font-bold text-[#7ef3c5]">🎮 CRYPTO SURVIVOR</h1>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors"
+            className="flex items-center gap-2 text-[#7ef3c5] hover:text-white px-3 py-1.5 rounded-lg bg-[#7ef3c5]/10 hover:bg-[#7ef3c5]/20 transition-colors border border-[#7ef3c5]/30"
           >
-            ← Back to Dashboard
+            <span>↩</span>
+            <span>Dashboard</span>
           </button>
-        </div>
-        
-        {/* Game canvas area */}
-        <div 
-          className="flex-1 flex items-center justify-center p-2"
-          onClick={handleToggle}
-        >
+        </header>
+
+        {/* Game content area - matches dashboard content-area */}
+        <div className="content-area flex items-center justify-center" onClick={handleToggle}>
           <div className="relative">
-            <GameCanvas gameState={gameState} width={360} height={480} />
+            <GameCanvas gameState={gameState} width={360} height={400} />
             
             {/* Overlays */}
             {gameState.status === 'start' && (
@@ -191,11 +189,13 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
             )}
           </div>
         </div>
-        
-        {/* Footer with controls hint */}
-        <div className="p-2 text-center text-xs text-gray-500 border-t border-gray-800">
-          Space / Click = Toggle Direction | ESC = Back
-        </div>
+
+        {/* Footer - matches dashboard footer style */}
+        <footer className="fixed bottom-0 left-0 right-0 h-14 bg-[#0b0f17]/95 border-t border-[#7ef3c5]/20 px-4 flex items-center justify-center z-50 backdrop-blur-xl">
+          <div className="text-sm text-gray-500">
+            Space / Click = Toggle Direction | ESC = Back to Dashboard
+          </div>
+        </footer>
       </div>
     );
   }

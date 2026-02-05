@@ -215,6 +215,7 @@ html, body {
 /* ==================== */
 
 .card-container {
+  -webkit-perspective: 1200px;
   perspective: 1200px;
   width: var(--card-width);
   height: var(--card-height);
@@ -225,21 +226,36 @@ html, body {
   width: 100%;
   height: 100%;
   position: relative;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .card.flipped {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+
+/* Single face approach - content swaps at midpoint */
+.card-face.card-single {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f0f0f;
+  /* Counter-rotate to keep content readable when card is flipped */
+}
+
+.card.flipped .card-face.card-single {
+  /* Counter-rotate the content so it appears normal when card is at 180deg */
+  -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
 }
 
 /* Add subtle scale effect during animation */
-.card.animating.flipped {
+.card.animating {
   animation: card-flip-scale 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-.card.animating:not(.flipped) {
-  animation: card-flip-scale-reverse 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 @keyframes card-flip-scale {
@@ -248,30 +264,18 @@ html, body {
   100% { transform: rotateY(180deg) scale(1); }
 }
 
+.card.animating.flipped {
+  animation: card-flip-scale 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.card.animating:not(.flipped) {
+  animation: card-flip-scale-reverse 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
 @keyframes card-flip-scale-reverse {
   0% { transform: rotateY(180deg) scale(1); }
   50% { transform: rotateY(90deg) scale(0.95); }
   100% { transform: rotateY(0deg) scale(1); }
-}
-
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.card-front {
-  background: #0f0f0f;
-  z-index: 2;
-}
-
-.card-back {
-  background: #0b0f17;
-  transform: rotateY(180deg);
 }
 
 /* Edge glow during flip */
