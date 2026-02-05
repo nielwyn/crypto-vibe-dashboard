@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
+// Animation duration in milliseconds (matches CSS 0.8s)
+const ANIMATION_DURATION_MS = 800;
+
 interface CardFlipProps {
   isFlipped: boolean;
   frontContent: React.ReactNode;
@@ -12,14 +15,17 @@ export const CardFlip: React.FC<CardFlipProps> = ({
   backContent 
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [prevFlipped, setPrevFlipped] = useState(isFlipped);
 
   useEffect(() => {
-    if (isFlipped !== undefined) {
+    // Only animate when the flip state actually changes
+    if (isFlipped !== prevFlipped) {
       setIsAnimating(true);
-      const timer = setTimeout(() => setIsAnimating(false), 800);
+      setPrevFlipped(isFlipped);
+      const timer = setTimeout(() => setIsAnimating(false), ANIMATION_DURATION_MS);
       return () => clearTimeout(timer);
     }
-  }, [isFlipped]);
+  }, [isFlipped, prevFlipped]);
 
   return (
     <div className="card-container">
