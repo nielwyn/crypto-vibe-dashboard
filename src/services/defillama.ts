@@ -120,4 +120,43 @@ export const defillama = {
     const yields = await this.getTopYields(1);
     return yields[0] || null;
   },
+
+  /**
+   * Get yields filtered by token symbols matching user's selected coins
+   * Helps prioritize yields relevant to the user's portfolio
+   */
+  async getYieldsForTokens(symbols: string[], limit: number = 5): Promise<YieldPool[]> {
+    try {
+      const response = await fetch(YIELDS_API);
+      
+      if (!response.ok) {
+        throw new Error(`DefiLlama API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data || !Array.isArray(data.data)) {
+        return [];
+      }
+      
+      // Normalize symbols to lowercase for comparison
+      const normalizedSymbols = symbols.map(s => s.toLowerCase());
+      
+      return data.data
+        .filter((pool: YieldPool) => {
+          const poolSymbol = pool.symbol.toLowerCase();
+          // Check if pool symbol contains any of the tracked coin symbols
+          return normalizedSymbols.some(sym => poolSymbol.includes(sym)) &&
+            pool.tvlUsd > 1000000 &&
+            pool.apy > 0 &&
+            pool.apy < 100 &&
+            POPULAR_CHAINS.includes(pool.chain);
+        })
+        .sort((a: YieldPool, b: YieldPool) => b.apy - a.apy)
+        .slice(0, limit);
+    } catch (error) {
+      console.error('DefiLlama API error:', error);
+      return [];
+    }
+  },
 };
