@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDragScroll } from '../../hooks/useDragScroll';
 import { ActionCard } from '../../types/actionCards';
 
 interface ActionCardsBarProps {
@@ -8,15 +9,17 @@ interface ActionCardsBarProps {
 export const ActionCardsBar: React.FC<ActionCardsBarProps> = ({ cards }) => {
   if (!cards.length) return null;
 
+  const scrollRef = useDragScroll<HTMLDivElement>();
+
   return (
-    <div className="fixed bottom-14 left-0 right-0 bg-[#0f0f1a]/95 border-t border-[#3d4470]/50 px-3 py-2 z-40 backdrop-blur-xl">
+    <div className="phantom-card p-3 mb-3">
       <div className="flex items-center gap-2 mb-2">
         <span className="text-xs text-[#8da4d4]">🎯 AI ACTIONS</span>
         <span className="text-[10px] text-[#ab9ff2] bg-[#ab9ff2]/10 px-1.5 py-0.5 rounded">
           {cards.length}
         </span>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
         {cards.map(card => (
           <div 
             key={card.id}

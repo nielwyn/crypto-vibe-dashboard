@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
 import { FearGreedGauge } from './components/FearGreedGauge';
 import { AISummary } from './components/AISummary';
@@ -7,9 +7,7 @@ import { CoinSelector } from './components/CoinSelector';
 import { TimeframeSelector, ChartTimeframe } from './components/TimeframeSelector';
 import { NewsTicker } from './components/NewsTicker';
 import { RefreshIndicator } from './components/RefreshIndicator';
-import { Mascot } from './components/Mascot';
 import { Confetti } from './components/Confetti';
-import { PredictionGame } from './components/PredictionGame';
 import { YieldsSection } from './components/YieldsSection';
 import { CryptoSurvivorGame } from './components/CryptoSurvivor/CryptoSurvivorGame';
 import { CardFlip } from './components/CardFlip';
@@ -26,7 +24,13 @@ function App() {
   const { coins, loading: coinsLoading, selectedCoins, lastUpdated, updateSelectedCoins, isUpdating } = useCoins();
   const { analysis, loading: aiLoading, generateAnalysis, loadCachedAnalysis } = useAI();
   const { news } = useNews();
-  const { yields, loading: yieldsLoading } = useYields();
+  const [focusedCoinId, setFocusedCoinId] = useState<string | null>(null);
+  const focusedCoin = useMemo(
+    () => coins.find(coin => coin.id === focusedCoinId) || coins[0],
+    [coins, focusedCoinId]
+  );
+  const focusedSymbol = focusedCoin?.symbol ? [focusedCoin.symbol] : undefined;
+  const { yields, loading: yieldsLoading } = useYields(focusedSymbol);
   const { fearGreed } = useFearGreed(coins);
   
   const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
@@ -43,6 +47,14 @@ function App() {
   const [isGoldenDay, setIsGoldenDay] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const coinScrollRef = useDragScroll<HTMLDivElement>();
+  const lastFocusedCoinIdRef = useRef<string | null>(null);
+
+  const orderedCoins = useMemo(() => {
+    if (!focusedCoinId) return coins;
+    const selected = coins.find(coin => coin.id === focusedCoinId);
+    if (!selected) return coins;
+    return [selected, ...coins.filter(coin => coin.id !== focusedCoinId)];
+  }, [coins, focusedCoinId]);
 
   // Load AI mode preference
   useEffect(() => {
@@ -66,6 +78,19 @@ function App() {
   useEffect(() => {
     loadCachedAnalysis();
   }, [loadCachedAnalysis]);
+
+  useEffect(() => {
+    if (coins.length > 0 && (!focusedCoinId || !coins.some(coin => coin.id === focusedCoinId))) {
+      setFocusedCoinId(coins[0].id);
+    }
+  }, [coins, focusedCoinId]);
+
+  useEffect(() => {
+    if (focusedCoinId && focusedCoinId !== lastFocusedCoinIdRef.current && focusedCoin) {
+      lastFocusedCoinIdRef.current = focusedCoinId;
+      generateAnalysis([focusedCoin], aiMode, yields, fearGreed, selectedPersona);
+    }
+  }, [focusedCoinId, focusedCoin, aiMode, yields, fearGreed, selectedPersona, generateAnalysis]);
 
   // Check for all-green confetti trigger
   useEffect(() => {
@@ -103,8 +128,8 @@ function App() {
   }, []);
 
   const handleRefreshAI = () => {
-    if (coins.length > 0) {
-      generateAnalysis(coins, aiMode, yields, fearGreed, selectedPersona);
+    if (focusedCoin) {
+      generateAnalysis([focusedCoin], aiMode, yields, fearGreed, selectedPersona);
     }
   };
 
@@ -115,43 +140,17 @@ function App() {
     await storage.setPreferences(prefs);
     
     // Regenerate analysis with new mode
-    if (coins.length > 0) {
-      generateAnalysis(coins, mode, yields, fearGreed, selectedPersona);
+    if (focusedCoin) {
+      generateAnalysis([focusedCoin], mode, yields, fearGreed, selectedPersona);
     }
   };
 
   const handlePersonaChange = (personaId: string) => {
     setSelectedPersona(personaId);
     // Regenerate analysis with new persona
-    if (coins.length > 0) {
-      generateAnalysis(coins, aiMode, yields, fearGreed, personaId);
+    if (focusedCoin) {
+      generateAnalysis([focusedCoin], aiMode, yields, fearGreed, personaId);
     }
-  };
-
-  const handlePredict = async (direction: 'up' | 'down' | 'sideways') => {
-    const btcCoin = coins.find(c => c.id === 'bitcoin');
-    if (!btcCoin) return;
-
-    const newPrediction = {
-      coin: 'bitcoin',
-      direction,
-      priceAtPrediction: btcCoin.current_price,
-      timestamp: Date.now(),
-      result: 'pending' as const,
-    };
-
-    const stats = await storage.getUserStats();
-    stats.predictions.push(newPrediction);
-    await storage.setUserStats(stats);
-    setUserStats(stats);
-  };
-
-  const calculateAccuracy = () => {
-    if (userStats.predictions.length === 0) return undefined;
-    const completed = userStats.predictions.filter(p => p.result !== 'pending');
-    if (completed.length === 0) return 0;
-    const correct = completed.filter(p => p.result === 'correct').length;
-    return Math.round((correct / completed.length) * 100);
   };
 
   // Get mood-based background classes - Phantom style
@@ -173,11 +172,6 @@ function App() {
       {/* Phantom-style Header */}
       <header className="fixed top-0 left-0 right-0 h-14 bg-[#0f0f1a]/95 border-b border-[#3d4470]/50 z-50 px-4 flex items-center justify-center backdrop-blur-xl">
         <h1 className="text-lg font-bold phantom-gradient-text tracking-wide">CRYPTO VIBE</h1>
-        {!coinsLoading && coins.length > 0 && (
-          <div className="absolute left-4">
-            <Mascot fearGreed={fearGreed} />
-          </div>
-        )}
       </header>
 
       {/* Scrollable Content Area */}
@@ -194,18 +188,7 @@ function App() {
           <FearGreedGauge fearGreed={fearGreed} />
         )}
 
-        {/* AI Summary */}
-        <AISummary
-          analysis={analysis}
-          loading={aiLoading}
-          onRefresh={handleRefreshAI}
-          mode={aiMode}
-          onModeChange={handleModeChange}
-          onPersonaChange={handlePersonaChange}
-          selectedCoins={coins}
-        />
-
-        {/* Live Prices Section - Phantom Style */}
+        {/* Live Prices Section - Phantom Style (User selects token first) */}
         <div className="phantom-card p-4 mb-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
@@ -241,12 +224,20 @@ function App() {
                 ))}
               </>
             ) : (
-              coins.map((coin: CoinData) => (
-                <CoinCard
+              orderedCoins.map((coin: CoinData) => (
+                <button
                   key={coin.id}
-                  coin={coin}
-                  timeframe={chartTimeframe}
-                />
+                  onClick={() => setFocusedCoinId(coin.id)}
+                  className={`m-1 flex-shrink-0 rounded-xl transition-all ${
+                    focusedCoinId === coin.id ? 'ring-2 ring-[#ab9ff2]/80' : 'ring-1 ring-transparent'
+                  }`}
+                  title={`Focus ${coin.name}`}
+                >
+                  <CoinCard
+                    coin={coin}
+                    timeframe={chartTimeframe}
+                  />
+                </button>
               ))
             )}
           </div>
@@ -258,17 +249,28 @@ function App() {
           </div>
         </div>
 
-        {/* Yields Section */}
-        <YieldsSection yields={yields} loading={yieldsLoading} />
+        {/* AI Summary - Based on selected token */}
+        <AISummary
+          analysis={analysis}
+          loading={aiLoading}
+          onRefresh={handleRefreshAI}
+          mode={aiMode}
+          onModeChange={handleModeChange}
+          onPersonaChange={handlePersonaChange}
+          selectedCoins={focusedCoin ? [focusedCoin] : []}
+        />
+
+        {/* Yields Section - Based on selected token */}
+        <YieldsSection yields={yields} loading={yieldsLoading} focusedToken={focusedCoin?.symbol} />
+
+        {/* Action Cards Section - In scroll area */}
+        {!coinsLoading && coins.length > 0 && analysis?.actionCards && analysis.actionCards.length > 0 && (
+          <ActionCardsBar cards={analysis.actionCards} />
+        )}
 
         {/* News Ticker */}
         {news.length > 0 && <NewsTicker news={news} />}
       </div>
-
-      {/* Action Cards Bar - Above Footer */}
-      {!coinsLoading && coins.length > 0 && analysis?.actionCards && (
-        <ActionCardsBar cards={analysis.actionCards} />
-      )}
 
       {/* Phantom-style Footer */}
       {!coinsLoading && coins.length > 0 && (
@@ -278,24 +280,13 @@ function App() {
             <span className="text-sm font-semibold text-white">{userStats.streak}</span>
           </div>
           
-          <PredictionGame
-            onPredict={handlePredict}
-            accuracy={calculateAccuracy()}
-          />
-          
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowGame(true)}
-              className="text-gray-500 hover:text-[#7ef3c5] transition-colors text-lg"
-              title="Play Crypto Survivor!"
-            >
-              🎮
-            </button>
-            <div className="flex items-center gap-2 bg-[#1e2040]/60 px-3 py-1.5 rounded-full border border-[#3d4470]/50">
-              <span className="text-[#5a7cc0] text-sm">🎯</span>
-              <span className="text-sm font-semibold text-white">{calculateAccuracy() || 0}%</span>
-            </div>
-          </div>
+          <button
+            onClick={() => setShowGame(true)}
+            className="text-gray-500 hover:text-[#7ef3c5] transition-colors text-lg"
+            title="Play Crypto Survivor!"
+          >
+            🎮
+          </button>
         </footer>
       )}
     </div>

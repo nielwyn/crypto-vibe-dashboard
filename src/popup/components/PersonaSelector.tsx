@@ -1,5 +1,6 @@
 import React from 'react';
 import { PERSONAS } from '../../services/personas';
+import { useDragScroll } from '../../hooks/useDragScroll';
 
 interface PersonaSelectorProps {
   selectedPersona: string;
@@ -7,6 +8,8 @@ interface PersonaSelectorProps {
 }
 
 export const PersonaSelector: React.FC<PersonaSelectorProps> = ({ selectedPersona, onSelect }) => {
+  const scrollRef = useDragScroll<HTMLDivElement>();
+  
   const handleSurprise = () => {
     const random = PERSONAS[Math.floor(Math.random() * PERSONAS.length)];
     onSelect(random.id);
@@ -20,12 +23,12 @@ export const PersonaSelector: React.FC<PersonaSelectorProps> = ({ selectedPerson
           🎲 Surprise Me!
         </button>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div ref={scrollRef} className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {PERSONAS.map(p => (
           <button
             key={p.id}
             onClick={() => onSelect(p.id)}
-            className={`flex-shrink-0 flex flex-col items-center p-2 rounded-lg transition-all ${
+            className={`flex-shrink-0 w-16 h-16 flex flex-col items-center justify-center p-2 rounded-lg transition-all ${
               selectedPersona === p.id
                 ? 'bg-purple-600/30 border border-purple-500'
                 : 'bg-gray-800 border border-gray-700 hover:border-gray-600'

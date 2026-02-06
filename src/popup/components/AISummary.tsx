@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AIAnalysis, CoinData } from '../../types';
-import { ModeToggle } from './ModeToggle';
 import { PersonaSelector } from './PersonaSelector';
 import { storage } from '../../services/storage';
-
-// Minimum text length to show "Read more" button
-const MIN_TEXT_LENGTH_FOR_EXPANSION = 200;
 
 interface AISummaryProps {
   analysis: AIAnalysis | null;
@@ -21,8 +18,8 @@ export const AISummary: React.FC<AISummaryProps> = ({
   analysis,
   loading,
   onRefresh,
-  mode,
-  onModeChange,
+  mode: _mode,
+  onModeChange: _onModeChange,
   onPersonaChange,
   selectedCoins,
 }) => {
@@ -54,10 +51,10 @@ export const AISummary: React.FC<AISummaryProps> = ({
     if (analysis && analysis.summary) {
       setIsTyping(true);
       setDisplayedText('');
-      
+
       let index = 0;
       const text = analysis.summary;
-      
+
       const interval = setInterval(() => {
         if (index < text.length) {
           setDisplayedText(text.substring(0, index + 1));
@@ -84,15 +81,14 @@ export const AISummary: React.FC<AISummaryProps> = ({
             </span>
           )}
         </div>
-        <ModeToggle mode={mode} onToggle={onModeChange} />
       </div>
-      
+
       {/* Persona Selector */}
       <div className="px-3 pt-3">
         <PersonaSelector selectedPersona={selectedPersona} onSelect={handlePersonaSelect} />
       </div>
-      
-      {/* Content - NO internal scroll, truncate with line-clamp */}
+
+      {/* Content */}
       <div className="p-3">
         {loading ? (
           <div className="animate-pulse space-y-2">
@@ -101,18 +97,17 @@ export const AISummary: React.FC<AISummaryProps> = ({
           </div>
         ) : analysis ? (
           <div className="relative">
-            <div className="max-h-[100px] overflow-hidden relative">
-              <p className="text-sm text-gray-300 leading-relaxed line-clamp-4">
-                {displayedText}
-                {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
-              </p>
-            </div>
-            {!isTyping && displayedText.length > MIN_TEXT_LENGTH_FOR_EXPANSION && (
-              <button 
+            <p className="text-sm text-gray-300 leading-relaxed line-clamp-4">
+              {displayedText}
+              {isTyping && <span className="animate-pulse text-[#8da4d4]">|</span>}
+            </p>
+            {/* Read more link - show always when there's content */}
+            {displayedText.length > 50 && (
+              <button
                 onClick={() => setExpanded(true)}
-                className="text-xs text-[#ab9ff2] hover:text-[#8da4d4] mt-2 transition-colors"
+                className="text-xs text-[#ab9ff2] hover:text-white mt-2 transition-colors"
               >
-                Read more...
+                {isTyping ? 'View full ↓' : 'Read more ↓'}
               </button>
             )}
           </div>
@@ -120,10 +115,10 @@ export const AISummary: React.FC<AISummaryProps> = ({
           <p className="text-sm text-[#8da4d4]/50 italic leading-relaxed">Click "Refresh" to generate AI analysis</p>
         )}
       </div>
-      
+
       {/* Footer */}
       <div className="flex items-center justify-between p-3 border-t border-[#3d4470]/50 bg-[#0f0f1a]/50">
-        <button 
+        <button
           onClick={onRefresh}
           disabled={loading || isTyping}
           className="flex items-center gap-1 text-xs text-[#8da4d4] hover:text-[#5a7cc0] disabled:text-gray-600 transition-colors"
@@ -137,22 +132,27 @@ export const AISummary: React.FC<AISummaryProps> = ({
         )}
       </div>
 
-      {/* Expanded modal when "Read more" clicked */}
-      {expanded && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0f0f1a] border border-[#3d4470]/50 rounded-lg p-4 max-w-[380px] max-h-[500px] overflow-y-auto scrollbar-thin">
-            <div className="flex justify-between items-center mb-3">
+      {/* Expanded modal - rendered via portal to escape parent overflow */}
+      {expanded && createPortal(
+        <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
+          <div className="bg-[#0f0f1a] border border-[#3d4470]/50 rounded-lg max-w-[380px] max-h-[500px] flex flex-col">
+            {/* Sticky header with close button */}
+            <div className="sticky top-0 flex justify-between items-center p-4 border-b border-[#3d4470]/50 bg-[#0f0f1a] rounded-t-lg z-10">
               <span className="font-medium text-white">AI Analysis</span>
-              <button 
+              <button
                 onClick={() => setExpanded(false)}
-                className="text-gray-400 hover:text-white transition-colors text-lg"
+                className="text-gray-400 hover:text-white transition-colors text-lg w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#3d4470]/30"
               >
                 ✕
               </button>
             </div>
-            <p className="text-sm text-gray-300 whitespace-pre-line leading-relaxed">{displayedText}</p>
+            {/* Scrollable content */}
+            <div className="p-4 overflow-y-auto scrollbar-thin flex-1">
+              <p className="text-sm text-gray-300 whitespace-pre-line leading-relaxed">{displayedText}</p>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
