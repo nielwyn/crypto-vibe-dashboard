@@ -2,23 +2,79 @@ import { Obstacle } from './gameTypes';
 
 const OBSTACLE_COLORS = ['#ff7b7b', '#ffdd99', '#4be1a1'];
 
-export function spawnObstacle(difficulty: number): Obstacle {
+export function spawnObstacle(difficulty: number, wave: number): Obstacle {
+  // Determine obstacle type based on wave
+  let type: Obstacle['type'] = 'normal';
+  const rand = Math.random();
+  
+  if (wave >= 3 && rand < 0.2) {
+    type = 'fast';
+  } else if (wave >= 4 && rand < 0.15) {
+    type = 'wide';
+  }
+  
+  let span = 0.4 + Math.random() * 1.1; // 0.4 to 1.5 radians
+  let radialSpeed = 1 + difficulty * 0.5 + Math.random() * 1.5;
+  let thickness = 14 + Math.random() * 10;
+  
+  // Adjust based on type
+  if (type === 'fast') {
+    radialSpeed *= 1.5;
+    thickness *= 0.7;
+    span *= 0.8;
+  } else if (type === 'wide') {
+    span *= 1.5;
+    thickness *= 1.2;
+    radialSpeed *= 0.9;
+  }
+  
   return {
     id: `obs-${Date.now()}-${Math.random()}`,
     angle: Math.random() * Math.PI * 2,
-    span: 0.4 + Math.random() * 1.1, // 0.4 to 1.5 radians
+    span,
     radius: 160 + Math.random() * 20,
     startRadius: 170,
-    radialSpeed: 1 + difficulty * 0.5 + Math.random() * 1.5,
-    spin: (Math.random() - 0.5) * 0.04,
-    thickness: 14 + Math.random() * 10,
+    radialSpeed,
+    spin: (Math.random() - 0.5) * 0.04 * (wave >= 2 ? 1.5 : 1),
+    thickness,
     color: OBSTACLE_COLORS[Math.floor(Math.random() * OBSTACLE_COLORS.length)],
+    type,
   };
 }
 
-// Spawn interval decreases with time (harder over time)
-export function getSpawnInterval(elapsedSeconds: number): number {
-  const baseInterval = 1500; // ms
-  const minInterval = 600;   // ms
-  return Math.max(minInterval, baseInterval - elapsedSeconds * 20);
+export function spawnBossObstacle(): Obstacle {
+  return {
+    id: `boss-${Date.now()}`,
+    angle: Math.random() * Math.PI * 2,
+    span: Math.PI, // 180 degrees - half circle
+    radius: 180,
+    startRadius: 180,
+    radialSpeed: 0.8,
+    spin: 0.01,
+    thickness: 20,
+    color: '#ff4444',
+    type: 'boss',
+  };
 }
+
+// Spawn interval decreases with wave
+export function getSpawnInterval(elapsedSeconds: number, wave: number): number {
+  const baseInterval = 1500; // ms
+  const minInterval = 500;   // ms
+  const waveMultiplier = Math.max(0.5, 1 - (wave - 1) * 0.1);
+  return Math.max(minInterval, baseInterval * waveMultiplier - elapsedSeconds * 15);
+}
+
+export function getObstacleGlow(obstacle: Obstacle, time: number): number {
+  const pulse = 0.7 + Math.sin(time / 300) * 0.3;
+  if (obstacle.type === 'boss') return pulse * 1.5;
+  if (obstacle.type === 'fast') return pulse * 1.2;
+  return pulse;
+}
+
+export const OBSTACLE_NAMES = {
+  normal: 'FUD Wave',
+  fast: 'Bear Attack',
+  wide: 'Rug Pull',
+  boss: 'SEC Subpoena',
+} as const;

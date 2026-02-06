@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { GameCanvas } from './GameCanvas';
 import { GameState } from './gameTypes';
 import { updateGame } from './gameLogic';
-import { spawnObstacle, getSpawnInterval } from './obstacles';
+import { spawnObstacle, spawnBossObstacle, getSpawnInterval } from './obstacles';
+import { spawnPowerUp } from './powerups';
 import { storage } from '../../../services/storage';
 
 interface CryptoSurvivorGameProps {
@@ -20,6 +21,15 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
     obstacles: [],
     startTime: 0,
     lastSpawnTime: 0,
+    particles: [],
+    powerUps: [],
+    activePowerUps: [],
+    scorePopups: [],
+    wave: 1,
+    combo: 0,
+    lastNearMissTime: 0,
+    screenShake: 0,
+    lastPowerUpSpawn: 0,
   });
 
   // Load high score on mount
@@ -78,19 +88,46 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
 
     const gameLoop = setInterval(() => {
       setGameState(prev => {
-        let updated = updateGame(prev);
+        const centerX = 360 / 2;
+        const centerY = embedded ? 400 / 2 : 480 / 2;
+        const width = 360;
+        const height = embedded ? 400 : 480;
+        
+        let updated = updateGame(prev, centerX, centerY, width, height);
         
         // Spawn new obstacles
         const now = Date.now();
         const elapsed = (now - prev.startTime) / 1000;
-        const spawnInterval = getSpawnInterval(elapsed);
+        const spawnInterval = getSpawnInterval(elapsed, updated.wave);
         
         if (now - prev.lastSpawnTime > spawnInterval) {
           const difficulty = Math.min(elapsed / 30, 2); // Max difficulty at 60s
+          
+          // Check for boss spawn (every 30 seconds)
+          const shouldSpawnBoss = Math.floor(elapsed / 30) > Math.floor((elapsed - spawnInterval / 1000) / 30);
+          
+          if (shouldSpawnBoss && elapsed > 30) {
+            updated = {
+              ...updated,
+              obstacles: [...updated.obstacles, spawnBossObstacle()],
+              lastSpawnTime: now,
+            };
+          } else {
+            updated = {
+              ...updated,
+              obstacles: [...updated.obstacles, spawnObstacle(difficulty, updated.wave)],
+              lastSpawnTime: now,
+            };
+          }
+        }
+        
+        // Spawn power-ups (every 10-15 seconds)
+        const powerUpInterval = 10000 + Math.random() * 5000;
+        if (now - prev.lastPowerUpSpawn > powerUpInterval && prev.powerUps.length < 3) {
           updated = {
             ...updated,
-            obstacles: [...updated.obstacles, spawnObstacle(difficulty)],
-            lastSpawnTime: now,
+            powerUps: [...updated.powerUps, spawnPowerUp()],
+            lastPowerUpSpawn: now,
           };
         }
         
@@ -107,14 +144,13 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
   }, [gameState.status]);
 
   const getGameOverMessage = () => {
-    const messages = [
-      "You got REKT! 📉",
-      "Paper hands detected 📄",
-      "The FUD was too strong!",
-      "Should've diamond handed 💎",
-      "NGMI this time 😅",
-    ];
-    return messages[Math.floor(Math.random() * messages.length)];
+    const score = gameState.score;
+    if (score < 500) return "Didn't even try, ser 😅";
+    if (score < 1000) return "Paper hands detected 📄";
+    if (score < 2000) return "Not bad, but NGMI 😰";
+    if (score < 3000) return "Getting there, fren! 💪";
+    if (score < 5000) return "Diamond hands forming! 💎";
+    return "ABSOLUTE CHAD! WAGMI! 🏆🐔";
   };
 
   // If embedded, render as full-page like the dashboard
