@@ -19,7 +19,8 @@ export const gemini = {
     mode: 'professional' | 'degen' = 'professional', 
     yields: YieldPool[] = [],
     fearGreed?: FearGreedData,
-    personaId?: string
+    personaId?: string,
+    isMarketOverview: boolean = false
   ): Promise<AIAnalysis> {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     
@@ -29,13 +30,15 @@ export const gemini = {
 
     if (!apiKey) {
       console.warn('Gemini API key not found, using mock data');
-      return getMockAnalysis(coins, actualPersonaId, yields, fearGreed);
+      return getMockAnalysis(coins, actualPersonaId, yields, fearGreed, isMarketOverview);
     }
 
     try {
       const genAI = new GoogleGenAI({ apiKey });
 
-      const prompt = getPersonaPrompt(coins, yields, fearGreed, persona);
+      const prompt = isMarketOverview 
+        ? getMarketOverviewPrompt(yields, fearGreed, persona)
+        : getPersonaPrompt(coins, yields, fearGreed, persona);
 
       const response = await genAI.models.generateContent({
         model: 'gemini-2.0-flash',
@@ -48,16 +51,93 @@ export const gemini = {
       return {
         summary: text,
         generatedAt: Date.now(),
-        basedOn: coins,
+        basedOn: isMarketOverview ? { marketOverview: true } : coins,
         actionCards,
         persona: actualPersonaId,
       };
     } catch (error) {
       console.error('Gemini API error:', error);
-      return getMockAnalysis(coins, actualPersonaId, yields, fearGreed);
+      return getMockAnalysis(coins, actualPersonaId, yields, fearGreed, isMarketOverview);
     }
   },
 };
+
+function getMarketOverviewMockAnalysis(
+  personaId: string, 
+  _yields: YieldPool[], 
+  _fearGreed: FearGreedData | undefined,
+  fearGreedState: string,
+  fearGreedScore: number,
+  topYield: YieldPool | null,
+  actionCards: ActionCard[]
+): AIAnalysis {
+  const marketSentiment = fearGreedScore >= 60 ? 'bullish' : fearGreedScore <= 40 ? 'bearish' : 'neutral';
+  let summary = '';
+
+  switch (personaId) {
+    case 'analyst':
+      summary = `The cryptocurrency market is currently showing ${marketSentiment} conditions. The Fear & Greed Index stands at ${fearGreedScore} (${fearGreedState}), reflecting ${fearGreedScore >= 60 ? 'optimistic investor sentiment and risk-on behavior' : fearGreedScore <= 40 ? 'cautious investor sentiment with risk-off positioning' : 'balanced market psychology with mixed signals'}.\n\n${topYield ? `In the DeFi sector, attractive yield opportunities remain available. ${topYield.project} on ${topYield.chain} is offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} with a TVL of $${(topYield.tvlUsd / 1_000_000).toFixed(0)}M, presenting a solid risk-adjusted opportunity for yield-seeking investors.` : 'The DeFi sector continues to offer various yield opportunities across different chains.'}\n\nLooking ahead, market participants should monitor macroeconomic factors, regulatory developments, and on-chain metrics. The current environment ${marketSentiment === 'bullish' ? 'favors risk assets' : marketSentiment === 'bearish' ? 'calls for defensive positioning' : 'requires selective positioning'}.`;
+      break;
+
+    case 'degen':
+      summary = fearGreedScore >= 60 
+        ? `🚀🚀🚀 MARKET IS PUMPING FRENS! Fear & Greed at ${fearGreedScore} (${fearGreedState}) - we're in FULL BULL MODE! 🤑💎🙌\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! That's some juicy yield farming ser 🚜💰` : 'DeFi yields looking tasty across the board!'}\n\nThis is what we've been HODLing for! Time to stack those bags! WAGMI! 💪🔥`
+        : fearGreedScore <= 40
+          ? `😱 Market is looking SCARED, Fear & Greed: ${fearGreedScore} (${fearGreedState})! 📉 But you know what they say... be greedy when others are fearful! 🧠\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! Stack those yields while everyone else panic sells! 🚜💰` : 'Time to hunt for yield opportunities!'}\n\nDiamond hands are forged in times like these! 💎🙌 Stay strong fren!`
+          : `📊 Market doing that classic crab walk! Fear & Greed: ${fearGreedScore} (${fearGreedState}). Neither moon nor rekt - just vibing! 🦀\n\n${topYield ? `WHERE TO APE: ${topYield.project} offering ${topYield.apy.toFixed(2)}% APY on ${topYield.symbol} on ${topYield.chain}! Perfect time to farm while we wait for the next pump! 🚜💰` : 'Keep stacking and farming, the pump is coming!'}\n\nDCA is the way ser! WAGMI! 🫡`;
+      break;
+
+    case 'gambler':
+      const bullProb = Math.min(95, Math.max(5, fearGreedScore));
+      summary = `Analyzing market odds: Bullish probability sits at ${bullProb.toFixed(0)}% based on current Fear & Greed Index of ${fearGreedScore} (${fearGreedState}). The ${fearGreedScore >= 60 ? 'house is hot' : fearGreedScore <= 40 ? 'fear creates value bets' : 'odds are balanced'}. 🎲\n\n${topYield ? `Best yield play: ${topYield.project} at ${topYield.apy.toFixed(2)}% APY on ${topYield.chain} - a calculated opportunity worth considering. 🃏` : 'Yield opportunities await the sharp eye.'}\n\nThe market ${marketSentiment === 'bullish' ? 'favors aggressive positioning' : marketSentiment === 'bearish' ? 'rewards the contrarian' : 'suits the patient player'}. Know your edge, size your bets accordingly. 🎰`;
+      break;
+
+    case 'zen':
+      summary = `The crypto markets flow with ${marketSentiment} energy today. The Fear & Greed Index reflects ${fearGreedScore >= 60 ? 'excessive enthusiasm in the collective' : fearGreedScore <= 40 ? 'fear clouding minds' : 'balanced emotion'} at ${fearGreedScore}. 🕊️\n\n${topYield ? `For those who seek patient growth, ${topYield.project} offers ${topYield.apy.toFixed(2)}% - like seeds planted in fertile soil. 🌱` : 'Opportunities bloom for those who wait.'}\n\nRemember: The market, like the ocean, has its tides. The wise ${marketSentiment === 'bullish' ? 'ride the wave without attachment' : marketSentiment === 'bearish' ? 'find peace in the valley' : 'observe without forcing'}. Breathe. The path unfolds.`;
+      break;
+
+    case 'anchor':
+      summary = `BREAKING: Cryptocurrency markets ${marketSentiment.toUpperCase()} as Fear & Greed Index reads ${fearGreedScore}/100 (${fearGreedState}). 📰\n\nTOP STORIES:\n▸ Market Sentiment: ${fearGreedScore >= 60 ? 'Risk-on appetite dominates trading' : fearGreedScore <= 40 ? 'Caution prevails among investors' : 'Mixed signals from market participants'}${topYield ? `\n▸ DeFi Highlight: ${topYield.project} offers ${topYield.apy.toFixed(2)}% APY on ${topYield.chain}` : ''}\n\nMARKET OUTLOOK: Analysts suggest ${marketSentiment === 'bullish' ? 'continued optimism' : marketSentiment === 'bearish' ? 'defensive positioning' : 'selective opportunities'} in the near term. Stay tuned for more updates.`;
+      break;
+
+    default:
+      summary = `The cryptocurrency market is showing ${marketSentiment} conditions with the Fear & Greed Index at ${fearGreedScore}.`;
+  }
+
+  return {
+    summary,
+    generatedAt: Date.now(),
+    basedOn: { marketOverview: true },
+    actionCards,
+    persona: personaId,
+  };
+}
+
+function getMarketOverviewPrompt(yields: YieldPool[], fearGreed: FearGreedData | undefined, persona: any): string {
+  let prompt = persona.promptPrefix + '\n\n';
+  
+  prompt += `Provide a general cryptocurrency market overview and summary.\n`;
+  prompt += `Focus on overall market sentiment, trends, and what's happening in the crypto space today.\n`;
+
+  if (fearGreed) {
+    prompt += `
+Current Market Fear & Greed Index: ${fearGreed.score} (${fearGreed.state.replace('-', ' ').toUpperCase()})
+Components:
+- Volatility Score: ${fearGreed.components.volatility}
+- Momentum Score: ${fearGreed.components.momentum}
+- BTC Dominance Score: ${fearGreed.components.btcDominance}
+`;
+  }
+
+  if (yields.length > 0) {
+    prompt += `\nTop DeFi Yields in the market:
+${yields.slice(0, 3).map(y => `${y.project} on ${y.chain} (${y.symbol}): ${y.apy.toFixed(2)}% APY, TVL: $${(y.tvlUsd / 1_000_000).toFixed(0)}M`).join('\n')}`;
+  }
+
+  prompt += `\n\nProvide a concise market summary (2-3 paragraphs) in your persona's style. Cover overall market conditions, sentiment, and any notable trends.`;
+
+  return prompt;
+}
 
 function getPersonaPrompt(coins: CoinData[], yields: YieldPool[], fearGreed: FearGreedData | undefined, persona: any): string {
   let prompt = persona.promptPrefix + '\n\n';
@@ -182,16 +262,21 @@ function generateActionCards(coins: CoinData[], yields: YieldPool[], fearGreed: 
   return cards.slice(0, 3);
 }
 
-function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yields: YieldPool[] = [], fearGreed?: FearGreedData): AIAnalysis {
-  const avgChange = coins.reduce((sum, c) => sum + c.price_change_percentage_24h, 0) / coins.length;
-  const sentiment = avgChange > 2 ? 'bullish' : avgChange < -2 ? 'bearish' : 'neutral';
-
+function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yields: YieldPool[] = [], fearGreed?: FearGreedData, isMarketOverview: boolean = false): AIAnalysis {
   const topYield = yields.length > 0 ? yields[0] : null;
   
   const fearGreedState = fearGreed ? fearGreed.state.replace('-', ' ').toUpperCase() : 'NEUTRAL';
   const fearGreedScore = fearGreed ? fearGreed.score : 50;
 
   const actionCards = generateActionCards(coins, yields, fearGreed, personaId);
+
+  // Handle market overview mode
+  if (isMarketOverview) {
+    return getMarketOverviewMockAnalysis(personaId, yields, fearGreed, fearGreedState, fearGreedScore, topYield, actionCards);
+  }
+
+  const avgChange = coins.reduce((sum, c) => sum + c.price_change_percentage_24h, 0) / coins.length;
+  const sentiment = avgChange > 2 ? 'bullish' : avgChange < -2 ? 'bearish' : 'neutral';
 
   // Common calculations used by multiple personas
   const topPerformer = coins.reduce((prev, curr) => 
@@ -241,11 +326,6 @@ function getMockAnalysis(coins: CoinData[], personaId: string = 'analyst', yield
     case 'anchor':
       const anchorCoins = coins.map(c => `▸ ${c.name}: ${c.price_change_percentage_24h > 0 ? 'UP' : 'DOWN'} ${Math.abs(c.price_change_percentage_24h).toFixed(2)}% in 24 hours`).join('\n');
       summary = `BREAKING: Your tracked crypto portfolio ${sentiment.toUpperCase()} with ${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}% average movement. 📰\n\nTOP STORIES:\n▸ Fear & Greed Index: ${fearGreedScore}/100 (${fearGreedState})\n${anchorCoins}${topYield ? `\n▸ DeFi Highlight: ${topYield.project} yields ${topYield.apy.toFixed(2)}% APY` : ''}\n\nMARKET OUTLOOK: Analysts suggest ${sentiment === 'bullish' ? 'continued strength ahead' : sentiment === 'bearish' ? 'caution in near term' : 'consolidation likely'}. Stay tuned for more updates.`;
-      break;
-
-    case 'pirate':
-      const pirateFleet = coins.map(c => `${c.name} be ${c.price_change_percentage_24h > 0 ? 'sailing fast' : 'taking on water'} (${c.price_change_percentage_24h > 0 ? '+' : ''}${c.price_change_percentage_24h.toFixed(2)}%)`).join(', ');
-      summary = `AHOY CRYPTO SAILORS! ⚓ Yer fleet (${coins.map(c => c.symbol.toUpperCase()).join(', ')}) be ${sentiment === 'bullish' ? 'FAVORABLE' : sentiment === 'bearish' ? 'ROUGH' : 'CALM'} with ${avgChange > 0 ? '' : 'a '}${Math.abs(avgChange).toFixed(2)}% ${avgChange > 0 ? 'treasure gains' : 'losses on the voyage'}! Fear & Greed compass points to ${fearGreedScore} (${fearGreedState})! 🏴‍☠️\n\n${pirateFleet}! ${topYield ? `TREASURE SPOTTED at ${topYield.project} - ${topYield.apy.toFixed(2)}% APY booty awaits ye brave souls! 💰` : ''}\n\nThe winds ${sentiment === 'bullish' ? 'blow strong to fortune' : sentiment === 'bearish' ? 'warn of storms ahead' : 'be steady fer now'}! Hoist the sails and may yer wallets overflow with crypto treasure! YARRR! 🦜`;
       break;
 
     default:

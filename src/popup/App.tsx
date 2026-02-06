@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
 import { FearGreedGauge } from './components/FearGreedGauge';
 import { AISummary } from './components/AISummary';
@@ -12,6 +12,7 @@ import { YieldsSection } from './components/YieldsSection';
 import { CryptoSurvivorGame } from './components/CryptoSurvivor/CryptoSurvivorGame';
 import { CardFlip } from './components/CardFlip';
 import { ActionCardsBar } from './components/ActionCardsBar';
+import { TokenDetailModal } from './components/TokenDetailModal';
 import { useCoins } from '../hooks/useCoins';
 import { useAI } from '../hooks/useAI';
 import { useNews } from '../hooks/useNews';
@@ -24,13 +25,9 @@ function App() {
   const { coins, loading: coinsLoading, selectedCoins, lastUpdated, updateSelectedCoins, isUpdating } = useCoins();
   const { analysis, loading: aiLoading, generateAnalysis, loadCachedAnalysis } = useAI();
   const { news } = useNews();
-  const [focusedCoinId, setFocusedCoinId] = useState<string | null>(null);
-  const focusedCoin = useMemo(
-    () => coins.find(coin => coin.id === focusedCoinId) || coins[0],
-    [coins, focusedCoinId]
-  );
-  const focusedSymbol = focusedCoin?.symbol ? [focusedCoin.symbol] : undefined;
-  const { yields, loading: yieldsLoading } = useYields(focusedSymbol);
+  const [selectedTokenForDetail, setSelectedTokenForDetail] = useState<CoinData | null>(null);
+  // General yields for main page (no symbol filter)
+  const { yields, loading: yieldsLoading } = useYields();
   const { fearGreed } = useFearGreed(coins);
   
   const [aiMode, setAiMode] = useState<'professional' | 'degen'>('professional');
@@ -47,14 +44,7 @@ function App() {
   const [isGoldenDay, setIsGoldenDay] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const coinScrollRef = useDragScroll<HTMLDivElement>();
-  const lastFocusedCoinIdRef = useRef<string | null>(null);
-
-  const orderedCoins = useMemo(() => {
-    if (!focusedCoinId) return coins;
-    const selected = coins.find(coin => coin.id === focusedCoinId);
-    if (!selected) return coins;
-    return [selected, ...coins.filter(coin => coin.id !== focusedCoinId)];
-  }, [coins, focusedCoinId]);
+  const hasGeneratedMarketAnalysis = useRef(false);
 
   // Load AI mode preference
   useEffect(() => {
@@ -79,18 +69,13 @@ function App() {
     loadCachedAnalysis();
   }, [loadCachedAnalysis]);
 
+  // Generate market-wide analysis when coins load
   useEffect(() => {
-    if (coins.length > 0 && (!focusedCoinId || !coins.some(coin => coin.id === focusedCoinId))) {
-      setFocusedCoinId(coins[0].id);
+    if (coins.length > 0 && !hasGeneratedMarketAnalysis.current) {
+      hasGeneratedMarketAnalysis.current = true;
+      generateAnalysis(coins, aiMode, yields, fearGreed, selectedPersona, true);
     }
-  }, [coins, focusedCoinId]);
-
-  useEffect(() => {
-    if (focusedCoinId && focusedCoinId !== lastFocusedCoinIdRef.current && focusedCoin) {
-      lastFocusedCoinIdRef.current = focusedCoinId;
-      generateAnalysis([focusedCoin], aiMode, yields, fearGreed, selectedPersona);
-    }
-  }, [focusedCoinId, focusedCoin, aiMode, yields, fearGreed, selectedPersona, generateAnalysis]);
+  }, [coins, aiMode, yields, fearGreed, selectedPersona, generateAnalysis]);
 
   // Check for all-green confetti trigger
   useEffect(() => {
@@ -128,8 +113,8 @@ function App() {
   }, []);
 
   const handleRefreshAI = () => {
-    if (focusedCoin) {
-      generateAnalysis([focusedCoin], aiMode, yields, fearGreed, selectedPersona);
+    if (coins.length > 0) {
+      generateAnalysis(coins, aiMode, yields, fearGreed, selectedPersona, true);
     }
   };
 
@@ -139,18 +124,22 @@ function App() {
     prefs.aiMode = mode;
     await storage.setPreferences(prefs);
     
-    // Regenerate analysis with new mode
-    if (focusedCoin) {
-      generateAnalysis([focusedCoin], mode, yields, fearGreed, selectedPersona);
+    // Regenerate market analysis with new mode
+    if (coins.length > 0) {
+      generateAnalysis(coins, mode, yields, fearGreed, selectedPersona, true);
     }
   };
 
   const handlePersonaChange = (personaId: string) => {
     setSelectedPersona(personaId);
-    // Regenerate analysis with new persona
-    if (focusedCoin) {
-      generateAnalysis([focusedCoin], aiMode, yields, fearGreed, personaId);
+    // Regenerate market analysis with new persona
+    if (coins.length > 0) {
+      generateAnalysis(coins, aiMode, yields, fearGreed, personaId, true);
     }
+  };
+
+  const handleTokenClick = (coin: CoinData) => {
+    setSelectedTokenForDetail(coin);
   };
 
   // Get mood-based background classes - Phantom style
@@ -224,14 +213,12 @@ function App() {
                 ))}
               </>
             ) : (
-              orderedCoins.map((coin: CoinData) => (
+              coins.map((coin: CoinData) => (
                 <button
                   key={coin.id}
-                  onClick={() => setFocusedCoinId(coin.id)}
-                  className={`m-1 flex-shrink-0 rounded-xl transition-all ${
-                    focusedCoinId === coin.id ? 'ring-2 ring-[#ab9ff2]/80' : 'ring-1 ring-transparent'
-                  }`}
-                  title={`Focus ${coin.name}`}
+                  onClick={() => handleTokenClick(coin)}
+                  className="m-1 flex-shrink-0 rounded-xl transition-all hover:ring-2 hover:ring-[#ab9ff2]/50"
+                  title={`View ${coin.name} details`}
                 >
                   <CoinCard
                     coin={coin}
@@ -249,7 +236,7 @@ function App() {
           </div>
         </div>
 
-        {/* AI Summary - Based on selected token */}
+        {/* AI Summary - Market Overview */}
         <AISummary
           analysis={analysis}
           loading={aiLoading}
@@ -257,11 +244,11 @@ function App() {
           mode={aiMode}
           onModeChange={handleModeChange}
           onPersonaChange={handlePersonaChange}
-          selectedCoins={focusedCoin ? [focusedCoin] : []}
+          isMarketOverview={true}
         />
 
-        {/* Yields Section - Based on selected token */}
-        <YieldsSection yields={yields} loading={yieldsLoading} focusedToken={focusedCoin?.symbol} />
+        {/* Yields Section - Top Market Yields */}
+        <YieldsSection yields={yields} loading={yieldsLoading} />
 
         {/* Action Cards Section - In scroll area */}
         {!coinsLoading && coins.length > 0 && analysis?.actionCards && analysis.actionCards.length > 0 && (
@@ -298,11 +285,24 @@ function App() {
   );
 
   return (
-    <CardFlip
-      isFlipped={showGame}
-      frontContent={dashboardContent}
-      backContent={gameContent}
-    />
+    <>
+      <CardFlip
+        isFlipped={showGame}
+        frontContent={dashboardContent}
+        backContent={gameContent}
+      />
+      
+      {/* Token Detail Modal */}
+      {selectedTokenForDetail && (
+        <TokenDetailModal
+          coin={selectedTokenForDetail}
+          fearGreed={fearGreed}
+          aiMode={aiMode}
+          selectedPersona={selectedPersona}
+          onClose={() => setSelectedTokenForDetail(null)}
+        />
+      )}
+    </>
   );
 }
 

@@ -13,13 +13,14 @@ export function useAI() {
     mode: 'professional' | 'degen' = 'professional', 
     yields: YieldPool[] = [],
     fearGreed?: FearGreedData,
-    personaId?: string
+    personaId?: string,
+    isMarketOverview: boolean = false
   ) => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await gemini.generateAnalysis(coins, mode, yields, fearGreed, personaId);
+      const result = await gemini.generateAnalysis(coins, mode, yields, fearGreed, personaId, isMarketOverview);
       setAnalysis(result);
       
       await storage.setAICache(result);

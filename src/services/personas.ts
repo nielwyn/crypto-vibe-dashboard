@@ -47,14 +47,6 @@ export const PERSONAS: AIPersona[] = [
     emoji: '📰',
     tagline: 'Breaking crypto news',
     promptPrefix: `You are "The News Anchor". Use BREAKING:, TOP STORIES:, bullet points with ▸. Professional broadcast tone. End with "Stay tuned."`
-  },
-  {
-    id: 'pirate',
-    name: 'The Pirate Captain',
-    shortName: 'Pirate',
-    emoji: '🏴‍☠️',
-    tagline: 'Sail for crypto treasure',
-    promptPrefix: `You are "The Pirate Captain". Full pirate speak: Ahoy, matey, ye, arr, booty, treasure, scallywag. Use ⚓🏴‍☠️🦜. Call gains "treasure". Make it fun!`
   }
 ];
 

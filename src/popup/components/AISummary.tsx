@@ -12,6 +12,7 @@ interface AISummaryProps {
   onModeChange: (mode: 'professional' | 'degen') => void;
   onPersonaChange?: (personaId: string) => void;
   selectedCoins?: CoinData[];
+  isMarketOverview?: boolean;
 }
 
 export const AISummary: React.FC<AISummaryProps> = ({
@@ -22,6 +23,7 @@ export const AISummary: React.FC<AISummaryProps> = ({
   onModeChange: _onModeChange,
   onPersonaChange,
   selectedCoins,
+  isMarketOverview = false,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -75,7 +77,11 @@ export const AISummary: React.FC<AISummaryProps> = ({
       <div className="flex items-center justify-between p-3 border-b border-[#3d4470]/50">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-white">🤖 AI Analysis</span>
-          {selectedCoins && selectedCoins.length > 0 && (
+          {isMarketOverview ? (
+            <span className="text-[10px] text-[#8da4d4]">
+              (Market Overview)
+            </span>
+          ) : selectedCoins && selectedCoins.length > 0 && (
             <span className="text-[10px] text-[#8da4d4]">
               ({selectedCoins.map(c => c.symbol.toUpperCase()).join(', ')})
             </span>
