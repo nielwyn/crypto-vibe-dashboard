@@ -19,6 +19,7 @@
   },
   "host_permissions": [
     "https://api.coingecko.com/*",
+    "https://api.alternative.me/*",
     "https://generativelanguage.googleapis.com/*",
     "https://yields.llama.fi/*",
     "https://api.firecrawl.dev/*"
