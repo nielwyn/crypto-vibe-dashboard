@@ -1,10 +1,10 @@
 import { GameState, Obstacle } from './gameTypes';
 import { updateParticles, createTrailParticle, createExplosionParticles, createCollectParticles, createStarParticle } from './particles';
 import { updatePowerUpPositions, checkPowerUpCollection, activatePowerUp, updateActivePowerUps, hasActivePowerUp, useShield } from './powerups';
+import { COMBO_TIMEOUT, NEAR_MISS_MIN_DISTANCE, NEAR_MISS_MAX_DISTANCE, NEAR_MISS_BONUS } from './constants';
 
 const PLAYER_RADIUS = 80;
 const PLAYER_SPEED = 0.05; // radians per frame
-const COMBO_TIMEOUT = 3000; // 3 seconds to maintain combo
 
 export function updateGame(state: GameState, centerX: number, centerY: number, width: number, height: number): GameState {
   if (state.status !== 'playing') return state;
@@ -197,12 +197,14 @@ function checkNearMiss(playerAngle: number, obstacles: Obstacle[]): { nearMiss: 
   for (const obs of obstacles) {
     // Check if obstacle just passed the player
     const radiusDiff = obs.radius - PLAYER_RADIUS;
-    if (radiusDiff < -20 && radiusDiff > -30) {
+    // radiusDiff goes from 0 to negative as obstacle passes inward
+    // NEAR_MISS_MAX_DISTANCE is -30, NEAR_MISS_MIN_DISTANCE is -20
+    if (radiusDiff > NEAR_MISS_MAX_DISTANCE && radiusDiff < NEAR_MISS_MIN_DISTANCE) {
       // Check if it was close in angle
       let angleDiff = normalizeAngle(playerAngle - obs.angle);
       if (Math.abs(angleDiff) < obs.span / 2 + 0.3) {
         nearMiss = true;
-        nearMissBonus = 50;
+        nearMissBonus = NEAR_MISS_BONUS;
         break;
       }
     }

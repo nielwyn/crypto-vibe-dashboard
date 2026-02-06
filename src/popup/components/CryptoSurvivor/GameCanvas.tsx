@@ -14,7 +14,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, width, height
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [chickenImg] = useState(() => {
     const img = new Image();
-    img.src = '/assets/chicken.svg';
+    // Check if running as Chrome extension
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
+      img.src = chrome.runtime.getURL('assets/chicken.svg');
+    } else {
+      // Development mode - use relative path
+      img.src = '/assets/chicken.svg';
+    }
     return img;
   });
   const [time, setTime] = useState(0);
@@ -269,7 +275,7 @@ function drawHUD(ctx: CanvasRenderingContext2D, gameState: GameState, width: num
       const config = POWER_UP_CONFIGS[apu.type];
       const remaining = apu.type === 'shield' ? 
         '∞' : 
-        Math.ceil((apu.endTime - Date.now()) / 1000);
+        Math.ceil((apu.endTime - Date.now()) / 1000) + 's';
       
       // Draw icon and timer
       ctx.font = '16px Arial';
@@ -278,7 +284,7 @@ function drawHUD(ctx: CanvasRenderingContext2D, gameState: GameState, width: num
       ctx.font = 'bold 10px Arial';
       ctx.fillStyle = config.color;
       ctx.textAlign = 'left';
-      ctx.fillText(remaining.toString() + 's', xOffset + 20, height - barHeight / 2 + 4);
+      ctx.fillText(remaining.toString(), xOffset + 20, height - barHeight / 2 + 4);
       
       xOffset += 60;
     });

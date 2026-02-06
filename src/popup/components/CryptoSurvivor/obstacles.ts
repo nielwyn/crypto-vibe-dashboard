@@ -1,4 +1,5 @@
 import { Obstacle } from './gameTypes';
+import { BASE_SPAWN_INTERVAL, MIN_SPAWN_INTERVAL, WAVE_DIFFICULTY_MULTIPLIER, TIME_DIFFICULTY_MULTIPLIER } from './constants';
 
 const OBSTACLE_COLORS = ['#ff7b7b', '#ffdd99', '#4be1a1'];
 
@@ -59,10 +60,8 @@ export function spawnBossObstacle(): Obstacle {
 
 // Spawn interval decreases with wave
 export function getSpawnInterval(elapsedSeconds: number, wave: number): number {
-  const baseInterval = 1500; // ms
-  const minInterval = 500;   // ms
-  const waveMultiplier = Math.max(0.5, 1 - (wave - 1) * 0.1);
-  return Math.max(minInterval, baseInterval * waveMultiplier - elapsedSeconds * 15);
+  const waveMultiplier = Math.max(0.5, 1 - (wave - 1) * WAVE_DIFFICULTY_MULTIPLIER);
+  return Math.max(MIN_SPAWN_INTERVAL, BASE_SPAWN_INTERVAL * waveMultiplier - elapsedSeconds * TIME_DIFFICULTY_MULTIPLIER);
 }
 
 export function getObstacleGlow(obstacle: Obstacle, time: number): number {

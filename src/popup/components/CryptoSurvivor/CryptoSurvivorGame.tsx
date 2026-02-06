@@ -5,6 +5,7 @@ import { updateGame } from './gameLogic';
 import { spawnObstacle, spawnBossObstacle, getSpawnInterval } from './obstacles';
 import { spawnPowerUp } from './powerups';
 import { storage } from '../../../services/storage';
+import { POWER_UP_SPAWN_INTERVAL_MIN, POWER_UP_SPAWN_INTERVAL_RANGE, MAX_POWER_UPS } from './constants';
 
 interface CryptoSurvivorGameProps {
   onClose: () => void;
@@ -122,8 +123,8 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
         }
         
         // Spawn power-ups (every 10-15 seconds)
-        const powerUpInterval = 10000 + Math.random() * 5000;
-        if (now - prev.lastPowerUpSpawn > powerUpInterval && prev.powerUps.length < 3) {
+        const powerUpInterval = POWER_UP_SPAWN_INTERVAL_MIN + Math.random() * POWER_UP_SPAWN_INTERVAL_RANGE;
+        if (now - prev.lastPowerUpSpawn > powerUpInterval && prev.powerUps.length < MAX_POWER_UPS) {
           updated = {
             ...updated,
             powerUps: [...updated.powerUps, spawnPowerUp()],

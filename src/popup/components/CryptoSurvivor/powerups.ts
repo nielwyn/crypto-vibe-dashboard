@@ -1,4 +1,5 @@
 import { PowerUp, ActivePowerUp } from './gameTypes';
+import { POWER_UP_DURATIONS } from './constants';
 
 const POWER_UP_RADIUS = 120; // Spawn between player and obstacles
 
@@ -73,17 +74,9 @@ export function activatePowerUp(
   type: PowerUp['type'],
   currentTime: number
 ): ActivePowerUp {
-  const durations = {
-    shield: Infinity, // Until used
-    slowmo: 5000,     // 5 seconds
-    mini: 5000,       // 5 seconds
-    magnet: 5000,     // 5 seconds
-    double: 10000,    // 10 seconds
-  };
-  
   return {
     type,
-    endTime: currentTime + durations[type],
+    endTime: currentTime + POWER_UP_DURATIONS[type],
     used: type === 'shield' ? false : undefined,
   };
 }
