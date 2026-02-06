@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && npm run postbuild",
-    "postbuild": "cp public/manifest.json dist/ && cp -r public/icons dist/ && mv dist/src/popup/index.html dist/popup.html 2>/dev/null || true && rm -rf dist/src",
+    "postbuild": "cp public/manifest.json dist/ && cp -r public/icons dist/ && cp -r public/assets dist/ && mv dist/src/popup/index.html dist/popup.html 2>/dev/null || true && rm -rf dist/src",
     "preview": "vite preview"
   },
   "keywords": [],
