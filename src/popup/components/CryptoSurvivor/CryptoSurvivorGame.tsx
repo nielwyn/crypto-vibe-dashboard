@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameCanvas } from './GameCanvas';
 import { GameState } from './gameTypes';
 import { updateGame } from './gameLogic';
@@ -13,11 +13,13 @@ interface CryptoSurvivorGameProps {
 }
 
 export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose, embedded = false }) => {
+  const gameContainerRef = useRef<HTMLDivElement>(null);
   const [gameState, setGameState] = useState<GameState>({
     status: 'start',
     score: 0,
     highScore: 0,
     playerAngle: -Math.PI / 2, // Start at top
+    targetAngle: -Math.PI / 2, // Mouse target angle
     playerDirection: 1,
     obstacles: [],
     startTime: 0,
@@ -40,8 +42,8 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
     });
   }, []);
 
-  // Toggle direction on click/space
-  const handleToggle = useCallback(() => {
+  // Handle click - start or restart game
+  const handleClick = useCallback(() => {
     if (gameState.status === 'start') {
       // Start game
       setGameState(prev => ({
@@ -52,12 +54,7 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
         obstacles: [],
         score: 0,
         playerAngle: -Math.PI / 2,
-      }));
-    } else if (gameState.status === 'playing') {
-      // Toggle direction
-      setGameState(prev => ({
-        ...prev,
-        playerDirection: prev.playerDirection === 1 ? -1 : 1,
+        targetAngle: -Math.PI / 2,
       }));
     } else if (gameState.status === 'gameover') {
       // Restart
@@ -68,12 +65,43 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
     }
   }, [gameState.status]);
 
+  // Mouse move handler - update target angle
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (gameState.status !== 'playing') return;
+    
+    const container = gameContainerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    // Center of the game canvas - full extension size
+    const canvasWidth = 400;
+    const canvasHeight = 600;
+    
+    // Calculate center position relative to the container
+    const offsetX = (rect.width - canvasWidth) / 2;
+    const offsetY = (rect.height - canvasHeight) / 2;
+    const centerX = offsetX + canvasWidth / 2;
+    const centerY = offsetY + canvasHeight / 2;
+    
+    // Get mouse position relative to game canvas center
+    const mouseX = e.clientX - rect.left - centerX;
+    const mouseY = e.clientY - rect.top - centerY;
+    
+    // Calculate angle from center to mouse
+    const angle = Math.atan2(mouseY, mouseX);
+    
+    setGameState(prev => ({
+      ...prev,
+      targetAngle: angle,
+    }));
+  }, [gameState.status, embedded]);
+
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault();
-        handleToggle();
+        handleClick();
       }
       if (e.code === 'Escape') {
         onClose();
@@ -81,7 +109,7 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleToggle, onClose]);
+  }, [handleClick, onClose]);
 
   // Game loop
   useEffect(() => {
@@ -89,10 +117,10 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
 
     const gameLoop = setInterval(() => {
       setGameState(prev => {
-        const centerX = 360 / 2;
-        const centerY = embedded ? 400 / 2 : 480 / 2;
-        const width = 360;
-        const height = embedded ? 400 : 480;
+        const centerX = 400 / 2;
+        const centerY = 600 / 2;
+        const width = 400;
+        const height = 600;
         
         let updated = updateGame(prev, centerX, centerY, width, height);
         
@@ -154,110 +182,26 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
     return "ABSOLUTE CHAD! WAGMI! 🏆🐔";
   };
 
-  // If embedded, render as full-page like the dashboard
+  // If embedded, render as full-page - no header/footer for max game space
   if (embedded) {
     return (
-      <div className="popup-container" style={{ background: 'linear-gradient(180deg, #0b0f17 0%, #0f1923 50%, #0b0f17 100%)' }}>
-        {/* Header - matches dashboard header style */}
-        <header className="fixed top-0 left-0 right-0 h-14 bg-[#0b0f17]/95 border-b border-[#7ef3c5]/20 z-50 px-4 flex items-center justify-between backdrop-blur-xl">
-          <h1 className="text-lg font-bold text-[#7ef3c5]">🎮 CRYPTO SURVIVOR</h1>
+      <div 
+        ref={gameContainerRef}
+        className="w-full h-full flex items-center justify-center cursor-crosshair"
+        style={{ background: 'linear-gradient(180deg, #0b0f17 0%, #0f1923 50%, #0b0f17 100%)', width: 400, height: 600 }}
+        onClick={handleClick}
+        onMouseMove={handleMouseMove}
+      >
+        <div className="relative">
+          <GameCanvas gameState={gameState} width={400} height={600} />
+          
+          {/* Back button - small overlay */}
           <button
-            onClick={onClose}
-            className="flex items-center gap-2 text-[#7ef3c5] hover:text-white px-3 py-1.5 rounded-lg bg-[#7ef3c5]/10 hover:bg-[#7ef3c5]/20 transition-colors border border-[#7ef3c5]/30"
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="absolute top-2 right-2 text-[#7ef3c5] hover:text-white px-2 py-1 rounded bg-black/50 hover:bg-black/70 transition-colors text-xs z-10"
           >
-            <span>↩</span>
-            <span>Dashboard</span>
+            ✕ ESC
           </button>
-        </header>
-
-        {/* Game content area - matches dashboard content-area */}
-        <div className="content-area flex items-center justify-center" onClick={handleToggle}>
-          <div className="relative">
-            <GameCanvas gameState={gameState} width={360} height={400} />
-            
-            {/* Overlays */}
-            {gameState.status === 'start' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                <h2 className="text-2xl font-bold text-[#7ef3c5] mb-2">
-                  💎 CRYPTO SURVIVOR 💎
-                </h2>
-                <p className="text-gray-400 mb-4">Dodge the FUD!</p>
-                <p className="text-sm text-gray-500 mb-4">
-                  Click or Space to toggle direction
-                </p>
-                <p className="text-[#7ef3c5] animate-pulse">
-                  Click to Start
-                </p>
-                {gameState.highScore > 0 && (
-                  <p className="text-sm text-gray-500 mt-4">
-                    Best HODL: {gameState.highScore}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {gameState.status === 'playing' && (
-              <div className="absolute top-4 left-4 text-white">
-                <div className="text-xs text-gray-400">HODL TIME</div>
-                <div className="text-2xl font-bold text-[#7ef3c5]">
-                  {gameState.score}
-                </div>
-              </div>
-            )}
-
-            {gameState.status === 'gameover' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-black/70">
-                <h2 className="text-xl font-bold text-[#ff7b7b] mb-2">
-                  {getGameOverMessage()}
-                </h2>
-                <div className="text-3xl font-bold text-white my-4">
-                  {gameState.score}
-                </div>
-                {gameState.score >= gameState.highScore && gameState.score > 0 && (
-                  <p className="text-[#ffdd99] mb-2">🏆 NEW HIGH SCORE!</p>
-                )}
-                <p className="text-sm text-gray-400 mb-4">
-                  Best HODL: {gameState.highScore}
-                </p>
-                <p className="text-[#7ef3c5] animate-pulse">
-                  Click to Retry
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Footer - matches dashboard footer style */}
-        <footer className="fixed bottom-0 left-0 right-0 h-14 bg-[#0b0f17]/95 border-t border-[#7ef3c5]/20 px-4 flex items-center justify-center z-50 backdrop-blur-xl">
-          <div className="text-sm text-gray-500">
-            Space / Click = Toggle Direction | ESC = Back to Dashboard
-          </div>
-        </footer>
-      </div>
-    );
-  }
-
-  // Original overlay mode for backwards compatibility
-  return (
-    <div 
-      className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center"
-      onClick={handleToggle}
-    >
-      <div className="relative" onClick={e => e.stopPropagation()}>
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute -top-10 right-0 text-gray-400 hover:text-white z-10"
-        >
-          ✕ Close (Esc)
-        </button>
-
-        {/* Game canvas */}
-        <div 
-          className="relative rounded-lg overflow-hidden border border-gray-700"
-          onClick={handleToggle}
-        >
-          <GameCanvas gameState={gameState} width={360} height={480} />
           
           {/* Overlays */}
           {gameState.status === 'start' && (
@@ -267,7 +211,7 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
               </h2>
               <p className="text-gray-400 mb-4">Dodge the FUD!</p>
               <p className="text-sm text-gray-500 mb-4">
-                Click or Space to toggle direction
+                Move mouse to control chicken
               </p>
               <p className="text-[#7ef3c5] animate-pulse">
                 Click to Start
@@ -281,8 +225,86 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
           )}
 
           {gameState.status === 'playing' && (
-            <div className="absolute top-4 left-4 text-white">
-              <div className="text-xs text-gray-400">HODL TIME</div>
+            <div className="absolute top-14 left-2 text-white">
+              <div className="text-xs text-gray-400">SCORE</div>
+              <div className="text-xl font-bold text-[#7ef3c5]">
+                {gameState.score}
+              </div>
+            </div>
+          )}
+
+          {gameState.status === 'gameover' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-black/70">
+              <h2 className="text-xl font-bold text-[#ff7b7b] mb-2">
+                {getGameOverMessage()}
+              </h2>
+              <div className="text-3xl font-bold text-white my-4">
+                {gameState.score}
+              </div>
+              {gameState.score >= gameState.highScore && gameState.score > 0 && (
+                <p className="text-[#ffdd99] mb-2">🏆 NEW HIGH SCORE!</p>
+              )}
+              <p className="text-sm text-gray-400 mb-4">
+                Best HODL: {gameState.highScore}
+              </p>
+              <p className="text-[#7ef3c5] animate-pulse">
+                Click to Retry
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Original overlay mode for backwards compatibility
+  return (
+    <div 
+      className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center"
+      onClick={handleClick}
+    >
+      <div className="relative" onClick={e => e.stopPropagation()}>
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-gray-400 hover:text-white z-10"
+        >
+          ✕ Close (Esc)
+        </button>
+
+        {/* Game canvas */}
+        <div 
+          ref={gameContainerRef}
+          className="relative rounded-lg overflow-hidden border border-gray-700"
+          onClick={handleClick}
+          onMouseMove={handleMouseMove}
+        >
+          <GameCanvas gameState={gameState} width={400} height={600} />
+          
+          {/* Overlays */}
+          {gameState.status === 'start' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+              <h2 className="text-2xl font-bold text-[#7ef3c5] mb-2">
+                💎 CRYPTO SURVIVOR 💎
+              </h2>
+              <p className="text-gray-400 mb-4">Dodge the FUD!</p>
+              <p className="text-sm text-gray-500 mb-4">
+                Move mouse to control chicken
+              </p>
+              <p className="text-[#7ef3c5] animate-pulse">
+                Click to Start
+              </p>
+              {gameState.highScore > 0 && (
+                <p className="text-sm text-gray-500 mt-4">
+                  Best HODL: {gameState.highScore}
+                </p>
+              )}
+            </div>
+          )}
+
+          {gameState.status === 'playing' && (
+            <div className="absolute top-4 right-4 text-white text-right">
+              <div className="text-xs text-gray-400">HODL SCORE</div>
               <div className="text-2xl font-bold text-[#7ef3c5]">
                 {gameState.score}
               </div>
@@ -312,7 +334,7 @@ export const CryptoSurvivorGame: React.FC<CryptoSurvivorGameProps> = ({ onClose,
 
         {/* Instructions */}
         <div className="text-center mt-4 text-sm text-gray-500">
-          Space / Click = Toggle Direction | Esc = Close
+          Move Mouse = Control | Esc = Close
         </div>
       </div>
     </div>

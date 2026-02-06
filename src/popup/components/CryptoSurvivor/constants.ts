@@ -19,7 +19,7 @@ export const NEAR_MISS_BONUS = 50; // points
 export const POWER_UP_DURATIONS = {
   shield: Number.MAX_SAFE_INTEGER, // Effectively infinite, but avoids Infinity arithmetic issues
   slowmo: 5000,
-  mini: 5000,
+  mini: 10000, // 10 seconds
   magnet: 5000,
   double: 10000,
 } as const;

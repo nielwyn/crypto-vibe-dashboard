@@ -55,6 +55,7 @@ export interface GameState {
   score: number;
   highScore: number;
   playerAngle: number;
+  targetAngle: number;  // Mouse-controlled target angle
   playerDirection: 1 | -1;  // 1 = clockwise, -1 = counter-clockwise
   obstacles: Obstacle[];
   startTime: number;

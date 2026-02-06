@@ -4,7 +4,14 @@ import { updatePowerUpPositions, checkPowerUpCollection, activatePowerUp, update
 import { COMBO_TIMEOUT, NEAR_MISS_MIN_DISTANCE, NEAR_MISS_MAX_DISTANCE, NEAR_MISS_BONUS } from './constants';
 
 const PLAYER_RADIUS = 80;
-const PLAYER_SPEED = 0.05; // radians per frame
+const PLAYER_SPEED = 0.15; // radians per frame - how fast player follows mouse
+
+// Normalize angle to -PI to PI range
+function normalizeAngleRange(angle: number): number {
+  while (angle > Math.PI) angle -= 2 * Math.PI;
+  while (angle < -Math.PI) angle += 2 * Math.PI;
+  return angle;
+}
 
 export function updateGame(state: GameState, centerX: number, centerY: number, width: number, height: number): GameState {
   if (state.status !== 'playing') return state;
@@ -20,11 +27,21 @@ export function updateGame(state: GameState, centerX: number, centerY: number, w
   const miniActive = hasActivePowerUp(state.activePowerUps, 'mini');
   const playerSize = miniActive ? 0.7 : 1;
   
-  // Update player position
-  const newAngle = state.playerAngle + (PLAYER_SPEED * state.playerDirection);
+  // Update player position - smoothly follow mouse target angle
+  let angleDiff = normalizeAngleRange(state.targetAngle - state.playerAngle);
+  const moveSpeed = PLAYER_SPEED * speedMultiplier;
+  let newAngle: number;
+  
+  if (Math.abs(angleDiff) < moveSpeed) {
+    // Close enough, snap to target
+    newAngle = state.targetAngle;
+  } else {
+    // Move towards target
+    newAngle = state.playerAngle + Math.sign(angleDiff) * moveSpeed;
+  }
   
   // Update obstacles (move inward, apply spin)
-  const updatedObstacles = state.obstacles
+  let updatedObstacles = state.obstacles
     .map(obs => ({
       ...obs,
       radius: obs.radius - obs.radialSpeed * speedMultiplier,
@@ -103,22 +120,26 @@ export function updateGame(state: GameState, centerX: number, centerY: number, w
   }
   
   // Check collisions
-  const collision = checkCollision(newAngle, updatedObstacles, playerSize);
+  const { collision, collidedObstacleId } = checkCollision(newAngle, updatedObstacles, playerSize);
   
   if (collision) {
     // Check for shield
     if (hasActivePowerUp(updatedActivePowerUps, 'shield')) {
       updatedActivePowerUps = useShield(updatedActivePowerUps);
+      // Remove the obstacle that hit the player
+      updatedObstacles = updatedObstacles.filter(obs => obs.id !== collidedObstacleId);
       screenShake = 10;
       updatedScorePopups.push({
         id: `popup-${Date.now()}-${Math.random()}`,
-        text: '🛡️ SHIELD BROKEN!',
+        text: '🛡️ SHIELD SAVED YOU!',
         x: playerX,
         y: playerY,
         life: 60,
         maxLife: 60,
-        color: '#ff7b7b',
+        color: '#4be1a1',
       });
+      // Add shield break particles
+      updatedParticles.push(...createCollectParticles(playerX, playerY, '#4be1a1'));
     } else {
       // Game over - explosion
       updatedParticles.push(...createExplosionParticles(playerX, playerY, 30));
@@ -173,7 +194,7 @@ export function updateGame(state: GameState, centerX: number, centerY: number, w
   };
 }
 
-function checkCollision(playerAngle: number, obstacles: Obstacle[], sizeMultiplier: number = 1): boolean {
+function checkCollision(playerAngle: number, obstacles: Obstacle[], sizeMultiplier: number = 1): { collision: boolean; collidedObstacleId: string | null } {
   for (const obs of obstacles) {
     // Check if player is within obstacle's radial zone
     const radiusDiff = Math.abs(obs.radius - PLAYER_RADIUS);
@@ -184,10 +205,23 @@ function checkCollision(playerAngle: number, obstacles: Obstacle[], sizeMultipli
     let angleDiff = normalizeAngle(playerAngle - obs.angle);
     const angleBuffer = 0.1 * sizeMultiplier;
     if (Math.abs(angleDiff) < obs.span / 2 + angleBuffer) {
-      return true;
+      // For boss obstacles, check if player is in one of the escape gaps
+      if (obs.type === 'boss') {
+        const gap1Angle = obs.angle - obs.span / 3;
+        const gap2Angle = obs.angle + obs.span / 3;
+        const gapSize = 0.35;
+        
+        const angleToGap1 = Math.abs(normalizeAngle(playerAngle - gap1Angle));
+        const angleToGap2 = Math.abs(normalizeAngle(playerAngle - gap2Angle));
+        
+        if (angleToGap1 < gapSize || angleToGap2 < gapSize) {
+          continue;
+        }
+      }
+      return { collision: true, collidedObstacleId: obs.id };
     }
   }
-  return false;
+  return { collision: false, collidedObstacleId: null };
 }
 
 function checkNearMiss(playerAngle: number, obstacles: Obstacle[]): { nearMiss: boolean; nearMissBonus: number } {

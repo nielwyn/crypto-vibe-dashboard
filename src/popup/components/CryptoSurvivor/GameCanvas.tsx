@@ -14,12 +14,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, width, height
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [chickenImg] = useState(() => {
     const img = new Image();
-    // Check if running as Chrome extension
+    // Check if running as Chrome extension - use PNG for better quality
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL) {
-      img.src = chrome.runtime.getURL('assets/chicken.svg');
+      img.src = chrome.runtime.getURL('assets/chicken.png');
     } else {
       // Development mode - use relative path
-      img.src = '/assets/chicken.svg';
+      img.src = '/assets/chicken.png';
     }
     return img;
   });
@@ -77,15 +77,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, width, height
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 
-    // Draw danger zone indicator (red glow when obstacles near)
-    const nearObstacles = gameState.obstacles.filter(obs => obs.radius < 100);
-    if (nearObstacles.length > 0) {
-      const dangerGradient = ctx.createRadialGradient(CENTER_X, CENTER_Y, 60, CENTER_X, CENTER_Y, 120);
-      dangerGradient.addColorStop(0, 'transparent');
-      dangerGradient.addColorStop(1, 'rgba(255, 123, 123, 0.1)');
-      ctx.fillStyle = dangerGradient;
-      ctx.fillRect(0, 0, width, height);
-    }
+    // Removed red danger zone - was distracting
 
     // Draw obstacles with enhanced visuals
     gameState.obstacles.forEach(obs => {
@@ -123,12 +115,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, width, height
       ctx.stroke();
       ctx.shadowBlur = 0;
       
-      // Draw boss obstacle gaps
+      // Draw boss obstacle gaps (escape holes)
       if (obs.type === 'boss') {
-        // Add two gaps in the boss obstacle
         const gap1Angle = obs.angle - obs.span / 3;
         const gap2Angle = obs.angle + obs.span / 3;
-        const gapSize = 0.15;
+        const gapSize = 0.35; // Much bigger gaps for easier escape
         
         [gap1Angle, gap2Angle].forEach(gapAngle => {
           ctx.beginPath();

@@ -1,7 +1,7 @@
 import { PowerUp, ActivePowerUp } from './gameTypes';
 import { POWER_UP_DURATIONS } from './constants';
 
-const POWER_UP_RADIUS = 120; // Spawn between player and obstacles
+const POWER_UP_RADIUS = 80; // Same as player orbit radius
 
 export const POWER_UP_CONFIGS = {
   shield: { icon: '🛡️', name: 'Diamond Hands', color: '#4be1a1' },
@@ -12,8 +12,9 @@ export const POWER_UP_CONFIGS = {
 } as const;
 
 export function spawnPowerUp(): PowerUp {
+  // Shield appears more frequently (2/6 = 33% chance)
   const types: Array<'shield' | 'slowmo' | 'mini' | 'magnet' | 'double'> = 
-    ['shield', 'slowmo', 'mini', 'magnet', 'double'];
+    ['shield', 'shield', 'slowmo', 'mini', 'magnet', 'double'];
   const type = types[Math.floor(Math.random() * types.length)];
   const config = POWER_UP_CONFIGS[type];
   

@@ -16,16 +16,16 @@ export function spawnObstacle(difficulty: number, wave: number): Obstacle {
   
   let span = 0.4 + Math.random() * 1.1; // 0.4 to 1.5 radians
   let radialSpeed = 1 + difficulty * 0.5 + Math.random() * 1.5;
-  let thickness = 14 + Math.random() * 10;
+  let thickness = 3 + Math.random() * 3; // Very thin obstacles (3-6px)
   
   // Adjust based on type
   if (type === 'fast') {
     radialSpeed *= 1.5;
-    thickness *= 0.7;
+    thickness *= 0.8;
     span *= 0.8;
   } else if (type === 'wide') {
     span *= 1.5;
-    thickness *= 1.2;
+    thickness *= 1.3;
     radialSpeed *= 0.9;
   }
   
@@ -33,8 +33,8 @@ export function spawnObstacle(difficulty: number, wave: number): Obstacle {
     id: `obs-${Date.now()}-${Math.random()}`,
     angle: Math.random() * Math.PI * 2,
     span,
-    radius: 160 + Math.random() * 20,
-    startRadius: 170,
+    radius: 350 + Math.random() * 50, // Spawn at edge of screen
+    startRadius: 380,
     radialSpeed,
     spin: (Math.random() - 0.5) * 0.04 * (wave >= 2 ? 1.5 : 1),
     thickness,
@@ -48,11 +48,11 @@ export function spawnBossObstacle(): Obstacle {
     id: `boss-${Date.now()}`,
     angle: Math.random() * Math.PI * 2,
     span: Math.PI, // 180 degrees - half circle
-    radius: 180,
-    startRadius: 180,
+    radius: 380, // Spawn at edge
+    startRadius: 380,
     radialSpeed: 0.8,
-    spin: 0.01,
-    thickness: 20,
+    spin: 0, // No rotation for boss
+    thickness: 6, // Thinner boss obstacle
     color: '#ff4444',
     type: 'boss',
   };
