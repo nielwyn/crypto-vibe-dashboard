@@ -201,7 +201,7 @@ function App() {
           </div>
           
           {/* Horizontal scroll container with drag-to-scroll */}
-          <div ref={coinScrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+          <div ref={coinScrollRef} className="flex overflow-x-auto pb-2 scrollbar-thin">
             {coinsLoading && coins.length === 0 ? (
               <>
                 {[1, 2, 3].map((i) => (

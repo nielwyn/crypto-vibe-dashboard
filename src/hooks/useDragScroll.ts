@@ -6,75 +6,61 @@ import { useRef, useEffect } from 'react';
  */
 export function useDragScroll<T extends HTMLElement>() {
   const ref = useRef<T>(null);
-  const stateRef = useRef({
-    isDragging: false,
-    startX: 0,
-    scrollLeft: 0,
-    hasMoved: false,
-  });
 
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
 
-    const state = stateRef.current;
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let hasMoved = false;
 
     const handleMouseDown = (e: MouseEvent) => {
-      // Only handle left mouse button
       if (e.button !== 0) return;
-      
-      state.isDragging = true;
-      state.hasMoved = false;
-      state.startX = e.pageX;
-      state.scrollLeft = element.scrollLeft;
+      isDragging = true;
+      hasMoved = false;
+      startX = e.pageX;
+      scrollLeft = element.scrollLeft;
       element.style.cursor = 'grabbing';
       element.style.userSelect = 'none';
     };
 
-    // Handle move on document so dragging continues even when cursor leaves element
     const handleMouseMove = (e: MouseEvent) => {
-      if (!state.isDragging) return;
-
+      if (!isDragging) return;
+      e.preventDefault();
       const x = e.pageX;
-      const walk = (state.startX - x) * 1.2;
-      
+      const walk = (startX - x) * 1.2;
       if (Math.abs(walk) > 5) {
-        state.hasMoved = true;
+        hasMoved = true;
       }
-      
-      element.scrollLeft = state.scrollLeft + walk;
+      element.scrollLeft = scrollLeft + walk;
     };
 
-    // Handle mouseup on document so drag ends even when cursor is outside
     const handleMouseUp = () => {
-      if (!state.isDragging) return;
-      
-      state.isDragging = false;
+      if (!isDragging) return;
+      isDragging = false;
       element.style.cursor = 'grab';
       element.style.userSelect = '';
     };
 
     const handleClick = (e: MouseEvent) => {
-      // If we moved during drag, prevent the click from activating buttons
-      if (state.hasMoved) {
+      if (hasMoved) {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation();
-        state.hasMoved = false;
+        hasMoved = false;
       }
     };
 
     element.style.cursor = 'grab';
     
-    // Mouse down on element only
-    element.addEventListener('mousedown', handleMouseDown, true);
-    // Move and up on document for smooth dragging
+    element.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     element.addEventListener('click', handleClick, true);
 
     return () => {
-      element.removeEventListener('mousedown', handleMouseDown, true);
+      element.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       element.removeEventListener('click', handleClick, true);
