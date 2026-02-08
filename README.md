@@ -1,271 +1,263 @@
-# Crypto Vibe Dashboard
+# Crypto Vibe Dashboard 🚀
 
-AI-powered Chrome extension showing real-time crypto market sentiment for Herond Browser users.
+AI-powered Chrome extension with real-time crypto sentiment, 6 unique AI personas, DeFi yields, and a survival mini-game for Herond Browser users.
 
-## Features
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![React](https://img.shields.io/badge/React-19-61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6)
+![License](https://img.shields.io/badge/license-ISC-green)
 
-### Core Features
-- 🎯 **Fear & Greed Index** - Custom market sentiment indicator (0-100 scale) based on volatility, momentum, and BTC dominance
-- 🤖 **AI Market Summary** - Google Gemini-powered market analysis with streaming text effect
-- 📊 **Live Coin Tracker** - Real-time prices from CoinGecko with auto-refresh every 30 seconds
-- ⚡ **Price Flash Animation** - Visual feedback when prices change (green up, red down)
-- 📈 **Sparkline Charts** - 7-day price trends for each tracked coin
-- 📰 **News Feed** - Latest crypto headlines with sentiment analysis
-- ⚙️ **Coin Selector** - Customize up to 5 coins to track
-- 💾 **Offline Support** - Chrome Storage caching for offline fallback
+---
 
-### 🎨 Creative Features (NEW!)
-- 🎭 **Dynamic Mascot Reactions** - Animated emoji character that reacts to market sentiment:
-  - 🤑 Extreme Bullish (>5%): Money eyes, bouncing animation
-  - 😎 Bullish (>2%): Cool vibes, pulsing
-  - 😐 Neutral (-2% to 2%): Chill state
-  - 😰 Bearish (<-2%): Nervous, shaking
-  - 😱 Extreme Bearish (<-5%): Panic mode, intense animation
-- 💬 **AI Degen Mode Toggle** - Switch between:
-  - 🤓 **Professional Mode**: Standard market analysis
-  - 🚀 **Degen Mode**: Crypto slang commentary with WAGMI, NGMI, diamond hands, paper hands, moon, lambo, and more!
-- 🎊 **Confetti Celebration** - Automatic confetti when ALL coins are green! Golden confetti when all coins are >10%
-  - Demo trigger: Press `Ctrl+C` to test
-  - Only triggers once per session
-- 🔥 **Daily Streak Counter** - Track consecutive days opening the extension
-  - Fire emoji intensity grows with your streak
-  - Resets if you miss 24 hours
-- 🌈 **Mood-Based Theme Colors** - Subtle background glow that changes with market sentiment:
-  - Green glow for bullish markets
-  - Red glow for bearish markets
-  - Neutral dark theme for sideways action
-- 🎰 **Prediction Mini-Game** - Test your market intuition!
-  - Predict BTC's next hour trend (Up/Down/Sideways)
-  - Track your accuracy percentage
-  - See if you're a crypto oracle or need more practice!
+## ✨ Features
 
-## Tech Stack
+### 📊 Fear & Greed Index (Real API!)
+- **Official Alternative.me API** - Real market sentiment data (0-100 scale)
+- Animated mood gauge with floating particles
+- Dynamic glow effects (green = greed, red = fear)
+- Score states: Extreme Fear 💀 | Fear 😰 | Greed 🔥 | Extreme Greed 🚀
 
-- **Frontend:** React 19 + TypeScript
-- **Styling:** Tailwind CSS 4
-- **Charts:** Recharts + Custom Sparklines
-- **Build Tool:** Vite
-- **APIs:** CoinGecko, Google Gemini, Firecrawl
-- **Storage:** Chrome Storage API
+### 🤖 AI Market Summary with 6 Personas
+Choose your AI trading companion:
 
-## Setup Instructions
+| Persona | Emoji | Style |
+|---------|-------|-------|
+| **The Analyst** | 🧠 | Professional, data-driven analysis |
+| **The Degen Ape** | 🦍 | WAGMI vibes, crypto slang, emojis |
+| **The Gambler** | 🎰 | Probability and odds focused |
+| **The Zen Master** | 🧘 | Calm, philosophical insights |
+| **The News Anchor** | 📰 | Breaking news style |
+| **The Pirate Captain** | 🏴‍☠️ | Pirate speak, AHOY! |
+
+- **Context-aware**: AI focuses on YOUR selected coins
+- **🎲 Surprise Me**: Random persona selection
+- Powered by Google Gemini 2.0 Flash
+
+### 💰 Live Coin Tracker (Real Data!)
+- **CoinGecko API** - Real-time prices, no API key required
+- Auto-refresh every 30 seconds
+- Price flash animations (green ▲ / red ▼)
+- 7-day sparkline charts (168 data points)
+- Track up to 5 coins
+
+### 🎯 AI Action Cards
+Smart recommendations based on market data:
+- 💰 **Yield Cards** - Top DeFi opportunities
+- 🚀 **Alert Cards** - Coins moving >3%
+- 🎲 **Degen Cards** - High-risk plays
+- 🛡️ **Safe Cards** - When Fear & Greed < 40
+
+### 📈 DeFi Yields Section
+- **DefiLlama API** - Top yield opportunities
+- Filtered by your tracked tokens
+- Color coded: 🟢 >5% | 🟡 2-5% | ⚪ <2%
+- 🔥 HOT badge for >8% APY
+
+### 📰 News Ticker
+- Auto-rotating carousel (5 seconds)
+- Sentiment badges: 🟢 Positive | 🔴 Negative | ⚪ Neutral
+- Click to read full article
+
+### 🎮 Crypto Survivor Mini-Game
+A survival game - dodge the FUD!
+- Full-screen 400×600px gameplay
+- Mouse-controlled player movement
+- Power-ups: Shield 🛡️, Mini 🔮, Slow ⏱️
+- High score persistence
+- Smooth 60 FPS
+
+### 🎴 3D Card Flip Animation
+- Click 🎮 to flip between dashboard and game
+- Smooth 0.8s 3D transform
+- Edge glow effects
+
+### 🎨 Creative Features
+- 🎭 **Dynamic Mascot** - Reacts to market mood
+- 🎊 **Confetti Celebration** - When all coins are green!
+- 🔥 **Daily Streak Counter** - Track consecutive days
+- 🎰 **Prediction Game** - Test your market intuition
+- 🌈 **Mood-Based Theme** - Subtle glow based on sentiment
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|------------|
+| **Platform** | Chrome Extension (Manifest V3) |
+| **Frontend** | React 19 + TypeScript |
+| **Styling** | Tailwind CSS 4 |
+| **Charts** | Recharts + Custom SVG Sparklines |
+| **Game** | HTML5 Canvas API |
+| **Build** | Vite |
+| **Storage** | Chrome Storage API |
+
+---
+
+## 🌐 APIs Used
+
+| API | Purpose | Auth |
+|-----|---------|------|
+| **CoinGecko** | Live prices, sparklines | ❌ Free |
+| **Alternative.me** | Fear & Greed Index | ❌ Free |
+| **DefiLlama** | DeFi yields | ❌ Free |
+| **Google Gemini** | AI analysis | ✅ API Key |
+| **Firecrawl** | News scraping | ✅ API Key |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 18+ and npm
-- Chrome/Chromium-based browser
-- (Optional) Google Gemini API key for AI analysis
-- (Optional) Firecrawl API key for news scraping
+- Node.js 18+
+- Chrome/Chromium browser
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/nielwyn/crypto-vibe-dashboard.git
-   cd crypto-vibe-dashboard
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables** (Optional)
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` and add your API keys:
-   ```
-   VITE_GEMINI_API_KEY=your_gemini_api_key_here
-   VITE_FIRECRAWL_API_KEY=your_firecrawl_api_key_here
-   ```
-   
-   **Note:** The extension works without API keys using mock data for demo purposes.
-
-4. **Build the extension**
-   ```bash
-   npm run build
-   ```
-   
-   This creates a `dist/` folder with the compiled extension.
-
-### Loading the Extension in Chrome
-
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer mode** (toggle in top-right corner)
-3. Click **Load unpacked**
-4. Select the `dist/` folder from the project directory
-5. The Crypto Vibe Dashboard icon should appear in your extensions toolbar
-
-### Development Mode
-
-For development with hot reload:
-
 ```bash
-npm run dev
+# Clone the repository
+git clone https://github.com/nielwyn/crypto-vibe-dashboard.git
+cd crypto-vibe-dashboard
+
+# Install dependencies
+npm install
+
+# Configure API keys (optional)
+cp .env.example .env
+# Edit .env with your keys:
+# VITE_GEMINI_API_KEY=your_key
+# VITE_FIRECRAWL_API_KEY=your_key
+
+# Build the extension
+npm run build
 ```
 
-Then load the extension from the `dist/` folder as described above. The extension will auto-reload when you make changes.
+### Load in Chrome
 
-## API Setup Guides
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select the `dist/` folder
 
-### Google Gemini API
+---
 
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click **Get API Key**
-4. Create a new API key
-5. Copy the key and add it to your `.env` file
-
-### Firecrawl API
-
-1. Visit [Firecrawl](https://www.firecrawl.dev/)
-2. Sign up for an account
-3. Navigate to your dashboard
-4. Copy your API key
-5. Add it to your `.env` file
-
-**Note:** Without API keys, the extension uses mock/fallback data which is suitable for testing and demonstration.
-
-## Usage
-
-1. Click the extension icon in your browser toolbar
-2. The popup displays:
-   - **Animated Mascot** (top-right) reacting to Fear & Greed score
-   - Fear & Greed Index gauge (0-100 scale with visual indicator)
-   - AI-generated market analysis with Pro/Degen mode toggle
-   - Live prices for your selected coins
-   - 7-day price trend sparklines
-   - Latest crypto news headlines
-   - **Daily Streak Counter** (bottom) showing consecutive days
-   - **Prediction Game** button to test your market intuition
-3. Click the gear icon to customize which coins to track (max 5)
-4. Toggle between **Professional** and **Degen** mode for AI analysis
-5. Watch for **Confetti** when all your coins are green! 🎊
-6. Prices auto-refresh every 30 seconds
-7. News updates every 5 minutes
-
-### Easter Eggs & Tips
-- Press `Ctrl+Shift+C` to trigger confetti manually (great for demos!)
-- Your daily streak resets if you miss 24 hours - keep coming back!
-- Try Degen mode for entertaining crypto slang analysis
-- The mascot gets more dramatic as market sentiment intensifies
-- Background subtly glows green (bullish) or red (bearish)
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 crypto-vibe-dashboard/
-├── manifest.json              # Chrome extension manifest (V3)
 ├── public/
-│   ├── manifest.json         # Extension configuration
-│   └── icons/                # Extension icons
+│   ├── manifest.json
+│   └── icons/
 ├── src/
-│   ├── popup/                # Popup UI
-│   │   ├── index.html       # HTML entry point
-│   │   ├── index.css        # Global styles with custom animations
-│   │   ├── index.tsx        # React entry point
-│   │   ├── App.tsx          # Main app component
-│   │   └── components/      # React components
-│   │       ├── AISummary.tsx          # AI analysis with mode toggle
-│   │       ├── CoinCard.tsx           # Individual coin display
-│   │       ├── CoinSelector.tsx       # Coin selection UI
-│   │       ├── MoodGauge.tsx          # Market sentiment indicator
-│   │       ├── NewsTicker.tsx         # News carousel
-│   │       ├── RefreshIndicator.tsx   # Last update timestamp
-│   │       ├── Sparkline.tsx          # Mini price chart
-│   │       ├── Mascot.tsx             # 🎭 Animated mascot (NEW)
-│   │       ├── ModeToggle.tsx         # 💬 Pro/Degen toggle (NEW)
-│   │       ├── Confetti.tsx           # 🎊 Celebration animation (NEW)
-│   │       ├── StreakCounter.tsx      # 🔥 Daily streak tracker (NEW)
-│   │       └── PredictionGame.tsx     # 🎰 Prediction mini-game (NEW)
-│   ├── services/            # API services
-│   │   ├── coingecko.ts    # CoinGecko API integration
-│   │   ├── gemini.ts       # Google Gemini AI integration (with degen mode)
-│   │   ├── firecrawl.ts    # Firecrawl news scraping
-│   │   └── storage.ts      # Chrome Storage wrapper (with streak & predictions)
-│   ├── hooks/               # Custom React hooks
-│   │   ├── useCoins.ts     # Coin data management
-│   │   ├── useAI.ts        # AI analysis management (mode support)
-│   │   └── useNews.ts      # News data management
-│   ├── types/               # TypeScript type definitions
-│   │   └── index.ts        # UserStats, Prediction, extended types
-│   └── utils/               # Utility functions
-│       └── sentiment.ts    # Market sentiment calculation
+│   ├── popup/
+│   │   ├── App.tsx
+│   │   └── components/
+│   │       ├── FearGreedGauge.tsx    # Animated mood gauge
+│   │       ├── AISummary.tsx         # AI analysis
+│   │       ├── PersonaSelector.tsx   # 6 persona picker
+│   │       ├── ActionCardsBar.tsx    # Action cards
+│   │       ├── CoinCard.tsx          # Coin display
+│   │       ├── YieldCard.tsx         # DeFi yields
+│   │       ├── CardFlip.tsx          # 3D flip animation
+│   │       └── CryptoSurvivor/       # Mini-game
+│   │           ├── CryptoSurvivorGame.tsx
+│   │           ├── GameCanvas.tsx
+│   │           └── gameLogic.ts
+│   ├── services/
+│   │   ├── coingecko.ts              # CoinGecko API
+│   │   ├── alternativeme.ts          # Fear & Greed API
+│   │   ├── defillama.ts              # DeFi yields API
+│   │   ├── gemini.ts                 # Gemini AI
+│   │   └── personas.ts               # 6 AI personas
+│   ├── hooks/
+│   │   ├── useCoins.ts
+│   │   ├── useFearGreed.ts
+│   │   └── useAI.ts
+│   └── types/
+│       └── index.ts
+├── package.json
+├── vite.config.ts
 └── README.md
 ```
 
-## Build Commands
+---
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build production-ready extension
-- `npm run preview` - Preview production build
+## ⚡ Business Rules
 
-## Features Breakdown
+| Rule | Value |
+|------|-------|
+| Price refresh | Every 30 seconds |
+| Fear & Greed refresh | Every 5 minutes |
+| Yields refresh | Every 5 minutes |
+| AI refresh | Manual only |
+| Max tracked coins | 5 |
+| Game FPS | 60 |
 
-### Fear & Greed Index
-- Calculates market sentiment using a weighted formula:
-  - Volatility (35%): High volatility = Fear, Low = Greed
-  - Momentum (35%): Positive change = Greed, Negative = Fear
-  - BTC Dominance (30%): High BTC.D = Fear, Low = Greed
-- Score ranges:
-  - 0-24: Extreme Fear 😱
-  - 25-49: Fear 😰
-  - 50-74: Greed 😎
-  - 75-100: Extreme Greed 🤑
-- Animated gauge with smooth transitions
+---
 
-### AI Market Summary
-- Powered by Google Gemini API
-- Analyzes current price data
-- Streaming text effect for better UX
-- Manual refresh to save API calls
-- Caches analysis in Chrome Storage
+## 🎬 Demo Cheat Codes
 
-### Live Coin Tracker
-- Real-time data from CoinGecko (no API key required)
-- Auto-refresh every 30 seconds
-- Flash animation on price updates
-- 7-day sparkline charts
-- Supports tracking up to 5 coins
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Shift+C` | Force confetti 🎊 |
+| `Click 🎮` | Flip to mini-game |
+| `ESC` | Return to dashboard |
+| `🎲 Surprise Me!` | Random AI persona |
 
-### News Feed
-- Latest crypto headlines
-- Sentiment classification (positive/negative/neutral)
-- Auto-refresh every 5 minutes
-- Carousel view with navigation dots
+---
 
-## Troubleshooting
+## 🔧 Development
 
-### Extension not loading
-- Ensure you've run `npm run build`
-- Check that you're loading the `dist/` folder, not the root folder
-- Check browser console for errors
+```bash
+# Development with hot reload
+npm run dev
 
-### No data showing
-- Check your internet connection
-- CoinGecko API may have rate limits (free tier)
-- Try refreshing the extension
-- Check browser console for API errors
+# Production build
+npm run build
 
-### AI analysis not working
-- Ensure `VITE_GEMINI_API_KEY` is set in `.env`
-- Rebuild after adding API key (`npm run build`)
-- Check that your Gemini API key is valid
-- Mock data will be shown if API fails
+# Preview build
+npm run preview
+```
 
-## License
+---
+
+## 📝 API Setup
+
+### Google Gemini (Optional)
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create API key
+3. Add to `.env`: `VITE_GEMINI_API_KEY=your_key`
+
+### Firecrawl (Optional)
+1. Visit [Firecrawl](https://www.firecrawl.dev/)
+2. Get API key
+3. Add to `.env`: `VITE_FIRECRAWL_API_KEY=your_key`
+
+> **Note:** Extension works without API keys using mock data.
+
+---
+
+## 🏆 Hackathon Scoring
+
+| Criteria | Weight | Implementation |
+|----------|--------|----------------|
+| **Completion** | 50% | ✅ Live demo with 5 real APIs |
+| **Feasibility** | 20% | ✅ Perfect for Herond Browser |
+| **AI Usage** | 15% | ✅ 6 AI personas + context-aware |
+| **Creativity** | 15% | ✅ Mini-game, 3D flip, particles |
+
+---
+
+## 📄 License
 
 ISC
 
-## Contributing
+---
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🙏 Acknowledgments
 
-## Acknowledgments
-
-- [CoinGecko](https://www.coingecko.com/) for crypto market data
-- [Google Gemini](https://ai.google.dev/) for AI analysis
-- [Firecrawl](https://www.firecrawl.dev/) for news scraping
-- Built for Herond Browser users
+- [CoinGecko](https://www.coingecko.com/) - Crypto market data
+- [Alternative.me](https://alternative.me/) - Fear & Greed Index
+- [DefiLlama](https://defillama.com/) - DeFi yields
+- [Google Gemini](https://ai.google.dev/) - AI analysis
+- Built for **Herond Browser** users
